@@ -88,7 +88,6 @@ object PostOrderTraversal {
 	def traverse(tree: Node) {
 		for (c <- tree.Children) {
 			traverse(c);
-			
 		}
 		println(tree.Data + " " + tree.NumberOfChildren)
 
@@ -111,8 +110,8 @@ object Main extends App {
 		//tree.pprint();
 	}
 	//now let's traverse popstorder
-	tree.pprint();
-	println("now PostOrderTraversal")
+	//tree.pprint();
+	//println("now PostOrderTraversal")
 	PostOrderTraversal.traverse(tree)
 	
 
