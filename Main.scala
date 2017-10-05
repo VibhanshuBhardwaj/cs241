@@ -44,11 +44,6 @@ class Node {
 //returns the node to which next node should be added to.
 object AddNodeObj {
 	def AddNode(curr: Node, data: Int, nChildren: Int) {
-		println("current node " + curr.Data + " " +curr.NumberOfChildren);
-		println("going to add node:" + data + " "  + nChildren);
-		//println("curr data " + curr.Data ); 
-		//println(" curr children length " + curr.Children.length)
-		//println(" number of children " + curr.NumberOfChildren)
 
 		if (curr.Data == -1) {
 			curr.Data = data;
@@ -57,21 +52,21 @@ object AddNodeObj {
 
 
 		else if ((curr.LengthOfChildren() == 0) && (curr.NumberOfChildren != 0))  {
-			println("0 children of current node but there are children");
+			//println("0 children of current node but there are children");
 			var child = new Node(data, nChildren);
 			curr.AppendToChildren(child);
-			println("just added " + child.Data + " " + child.NumberOfChildren)
-			//return curr;
+			//println("just added " + child.Data + " " + child.NumberOfChildren)
+
 		}
 		else {
 			var lastChild = curr.Children.apply(curr.LengthOfChildren() - 1);
-			println("last Child " + lastChild.Data + "  " + lastChild.NumberOfChildren)
+			//println("last Child " + lastChild.Data + "  " + lastChild.NumberOfChildren)
 			if ((lastChild.NumberOfChildren == lastChild.LengthOfChildren())) { //and both not zero?? if they're both zero do what elseif is doing
 				//if last child's last child has slots, just call AddNode on last child's last child
 				if (lastChild.NumberOfChildren != 0) { //remove this if block entirely to get old solution
 					var lastLastChild = lastChild.Children.apply(lastChild.LengthOfChildren() - 1);
 					if (lastLastChild.NumberOfChildren - lastLastChild.LengthOfChildren() > 0) {
-						println("nippy")
+						//println("nippy")
 						AddNode(lastLastChild, data, nChildren);
 						return;
 					}
@@ -79,32 +74,26 @@ object AddNodeObj {
 				
 				var child = new Node(data, nChildren);
 				curr.AppendToChildren(child);
-				println(" last child full. just added to curr(" + curr.Data +")'s' children array" + child.Data + " " + child.NumberOfChildren)
+				//println(" last child full. just added to curr(" + curr.Data +")'s' children array" + child.Data + " " + child.NumberOfChildren)
 				
 			}
 			else if (lastChild.NumberOfChildren != lastChild.LengthOfChildren()) { // fix this? add an or
-				println("lastChild's number of children is not same as current children")
+				//println("lastChild's number of children is not same as current children")
 				AddNode(lastChild, data, nChildren);
 			}
-			//else if (lastChild.NumberOfChildren == 0  && lastChild.LengthOfChildren == 0) {
-			//	println(" lastChild node is leaf! shouldnt happen lol")
-			//	var child = new Node(data, nChildren);
-			//	curr.AppendToChildren(child);
-			//	println("just added " + child.Data + " " + child.NumberOfChildren)
-			//}
 		}
-		//println("Just added node " + data + " " + nChildren)
-		// else if (curr.LengthOfChildren() != 0 && ()){
-		// 	var t =  null;
-		// 	while (curr.LengthOfChildren() != 0  != curr.NumberOfChildren) {
-		// 		println("stuck in while")
-		// 		var t = AddNode(curr.Children.apply(curr.Children.length - 1), data, nChildren);
-		// 	}
-		// 	t
-		// }
 	}
 }
+object PostOrderTraversal {
+	def traverse(tree: Node) {
+		for (c <- tree.Children) {
+			traverse(c);
+			
+		}
+		println(tree.Data + " " + tree.NumberOfChildren)
 
+	}
+}
 object Main extends App {
 	//println("traversing again")
 	var line = ""
@@ -121,6 +110,10 @@ object Main extends App {
 
 		//tree.pprint();
 	}
+	//now let's traverse popstorder
 	tree.pprint();
+	println("now PostOrderTraversal")
+	PostOrderTraversal.traverse(tree)
+	
 
 }
