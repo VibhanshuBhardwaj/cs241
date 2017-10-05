@@ -73,6 +73,7 @@ object AddNodeObj {
 					if (lastLastChild.NumberOfChildren - lastLastChild.LengthOfChildren() > 0) {
 						println("nippy")
 						AddNode(lastLastChild, data, nChildren);
+						return;
 					}
 				}
 				
