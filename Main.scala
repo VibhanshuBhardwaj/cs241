@@ -104,13 +104,14 @@ object Main extends App {
 		var value = arr.apply(0).toInt;
 		var nChildren = arr.apply(1).toInt;
 		
+		//constructing tree
 		AddNodeObj.AddNode(tree, value, nChildren);
 		//tree = nodeToBeAddedTo;
 
 		//tree.pprint();
 	}
 	//now let's traverse popstorder
-	//tree.pprint();
+	
 	//println("now PostOrderTraversal")
 	PostOrderTraversal.traverse(tree)
 	
