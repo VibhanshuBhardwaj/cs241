@@ -39,6 +39,12 @@ object Analysis {
 			correctSequence2 = appendToSequence(correctSequence2, "WORD");
 			correctSequence2 = appendToSequence(correctSequence2, "HEXINT");
 			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence2
+
+			var correctSequence3 = Seq[String]();
+			correctSequence3 = appendToSequence(correctSequence3, "WORD");
+			correctSequence3 = appendToSequence(correctSequence3, "ID");
+			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence3
+
 		}
 		else if (category == "LABEL") {
 			var correctSequence1 = Seq[String]();
@@ -164,7 +170,7 @@ object Asm {
 	val tokenLines: Seq[Seq[Token]] = io.Source.stdin.getLines.map(scan).toSeq
 	def printSymbolTable() {
 		for ((k, v) <- symTable) {
-			Console.err.println(k.take(k.length - 1) + " " + v)
+			Console.err.println(k + " " + v)
 		}
 	}
 	var symTable = collection.mutable.Map[String, Int]()
@@ -196,14 +202,18 @@ object Asm {
 					var firstToken = tokenLine.apply(0);
 			//	println("firstToken.kind is " + firstToken.kind)
 					if (firstToken.kind == "LABEL") {
-						if (symTable.contains(firstToken.lexeme)) {
+						var lex = firstToken.lexeme;
+						var id = lex.take(lex.length - 1)
+						//println("checking if " + id + " exists in symTable")
+						if (symTable.contains(id)) {
 							Console.err.println("ERROR")
 							Console.err.println("REDIFINING A LABEL IS NOT ALLOWED. You have multiple definitions of " + firstToken.lexeme);
 							//return; //exit here!!!!
 							System.exit(1);
 						}
 						else {
-							symTable = symTable + (firstToken.lexeme -> ProgramCounter)
+							var lex = firstToken.lexeme;
+							symTable = symTable + (lex.take(lex.length - 1) -> ProgramCounter)
 							if (len > 1) processLine(tokenLine.drop(1));
 						}
 					}
@@ -219,12 +229,32 @@ object Asm {
 				//println("my token" + token)
 			//}
 		}
-		printSymbolTable()
+		//printSymbolTable()
+		def replaceOperandLabelsWithValue(myToken: Token) : Token = {
+			//return new Token("blah", "blah");
+			if (myToken.kind == "ID") {
+				if (!symTable.contains(myToken.lexeme)) {
+					Console.err.println("ERROR");
+					Console.err.println("The label " + myToken.lexeme + " was never defined")
+					System.exit(1);
+					return myToken;
+				}
+				else {
+				//	println("creating new token " + myToken.kind + " " + symTable(myToken.lexeme).toString )
+					return new Token("INT", symTable(myToken.lexeme).toString)
+				}
+			}
+			else return myToken;
+		}
+		var sanitizedTokenLines = Seq[Seq[Token]]();
 		for (tokenLine <- tokenLines) {
 			//this only happens when all instructions are determined to be correct.
+			var labelsReplacedWithValue = tokenLine.map( x=> replaceOperandLabelsWithValue(x))
+			sanitizedTokenLines =  sanitizedTokenLines :+ labelsReplacedWithValue
 			//we will convert them to binary here.
+		}
+		for (tokenLine <- sanitizedTokenLines) { 
 			Synthesis.toMachineLanguage(tokenLine);
-
 		}
 	}
 

@@ -1,0 +1,10 @@
+start:
+
+i1: .word start
+
+shouldbe4: anotherShouldBe4: .word 2
+
+.word i1
+.word shouldbe4
+
+end: .word anotherShouldBe4
