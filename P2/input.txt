@@ -1,0 +1,12 @@
+.word 0
+.word 1
+add $1, $2, $3
+
+jr $31
+mflo $11
+start: mult $21, $22 ;comment
+
+lw $13, 0($14)
+blahblah $22
+.word 69
+$2
