@@ -1,2 +1,5 @@
+justLabel:
 start: start2:
 .word 10
+
+shouldbe4: .word 1

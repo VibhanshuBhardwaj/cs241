@@ -42,11 +42,11 @@ object Analysis {
 		}
 		else if (category == "LABEL") {
 			var correctSequence1 = Seq[String]();
-			correctSequence1 = appendToSequence(correctSequence1, "LABEL");
+			//correctSequence1 = appendToSequence(correctSequence1, "LABEL");
 			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence1;
 
 			var correctSequence2 = Seq[String]();
-			correctSequence2 = appendToSequence(correctSequence2, "LABEL");
+			//correctSequence2 = appendToSequence(correctSequence2, "LABEL");
 			val allPossibleCategories : Seq[String] = getAllPossibleCategories();
 			var allCorrectSequences : Seq[Seq[String]] = Seq[Seq[String]]();
 			//for LABEL, sequences of correct tokens are all
@@ -57,8 +57,8 @@ object Analysis {
 				}
 			}
 			for (s <- allCorrectSequences) {
-				var prependedLabelToCorrectSequence : Seq[String] = "LABEL" +: s
-				seqOfCorrectSeq = seqOfCorrectSeq :+ prependedLabelToCorrectSequence;
+				//var prependedLabelToCorrectSequence : Seq[String] = "LABEL" +: s
+				seqOfCorrectSeq = seqOfCorrectSeq :+ s;
 			}
 
 		}
@@ -92,7 +92,7 @@ object Analysis {
 		//check if sequnece of kind of tokens is one of correctTokenSequences
 		var seqOfKinds = Seq[String]();
 		for (token <- tokenLine) {
-			seqOfKinds = appendToSequence(seqOfKinds, token.kind);
+			if (token.kind != "LABEL") seqOfKinds = appendToSequence(seqOfKinds, token.kind);
 		}
 		
 		//println("is it correct syntactically? " + correctTokenSequences.contains(seqOfKinds));
@@ -182,7 +182,6 @@ object Asm {
 			//println("my tokenLine " + tokenLine);
 			val isTokenLineValid = Analysis.isTokenLineCorrect(tokenLine);
 			
-			val len = tokenLine.length;
 
 			if (!isTokenLineValid) {
 				Console.err.println("ERROR")
@@ -191,6 +190,7 @@ object Asm {
 			}
 
 			def processLine(tokenLine: Seq[Token]) {
+				val len = tokenLine.length;
 				if (len > 0) {
 					var firstToken = tokenLine.apply(0);
 			//	println("firstToken.kind is " + firstToken.kind)
