@@ -34,7 +34,7 @@ object Asm {
 		/* For short function calls such as this one, you can use a foreach as well, such as
 		 * tokenLine.foreach(println)
 		*/
-			println("my tokenLine " + tokenLine);
+			//println("my tokenLine " + tokenLine);
 			val isTokenLineValid = Analysis.isTokenLineCorrect(tokenLine);
 			//println("is my tokenLine valid? " + isTokenLineValid)
 
