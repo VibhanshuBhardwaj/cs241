@@ -1,29 +1,29 @@
 /***
-	* Scanning starter code for CS241 A3
 	* This file is where you should implement your solution.
-	* Created by Sean Harrap for CS241 in Winter 2017.
 	*/
+
+//TODO: THINK ABOUT CATEGORIES (some instructions are very similar in structure) AND MAYBE RENAMING THEM WITH FAMILY?
 
 import Scanning._
 
 //pass 1
 object Analysis {
 
-	//type SymbolTable = Map[String, Int]
-
 	def appendToSequence(s: Seq[String], toAdd: String) : Seq[String] = {
 		val ret = s :+ toAdd;
 		return ret;
 	}
+
 	def getAllPossibleCategories() : Seq[String] = {
 		var categories = Seq[String]();
 		categories = categories :+ "WORD"
 		categories = categories :+ "LABEL"
 		return categories
-
 	}
-	def getTokenSequencesOfCategory(category: String) : Seq[Seq[String]] = { //return sequence of string  or token?
+
+	def getTokenSequencesOfCategory(category: String) : Seq[Seq[String]] = {
 		var seqOfCorrectSeq = Seq[Seq[String]]()
+
 		if (category == "NOCATEGORY") {
 			println("tried to get valid token sequences of NOCATEGORY. Shouldn't happpen")
 			return seqOfCorrectSeq;
@@ -42,40 +42,49 @@ object Analysis {
 
 			var correctSequence3 = Seq[String]();
 			correctSequence3 = appendToSequence(correctSequence3, "WORD");
-			correctSequence3 = appendToSequence(correctSequence3, "ID");
-			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence3
 
+			//for the instruction .word <LABEL_NAME>. The token's kind is ID
+			correctSequence3 = appendToSequence(correctSequence3, "ID"); 
+			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence3
 		}
-		else if (category == "LABEL") {
+
+
+		//for label our correct sequences are intentionally not starting with LABEL itself
+		// because a label definition can be followed by an arbitrary number of label definitions
+		// eg, a: b: c: d: e: .word $2.
+		//so we just don't start our correct sequence with arbitrary no. of labels. we simply ignore and check if
+		// what follows label is a correct sequence, and if it is the entire sequence is correct.
+
+		else if (category == "LABEL") { 
 			var correctSequence1 = Seq[String]();
-			//correctSequence1 = appendToSequence(correctSequence1, "LABEL");
 			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence1;
 
 			var correctSequence2 = Seq[String]();
-			//correctSequence2 = appendToSequence(correctSequence2, "LABEL");
 			val allPossibleCategories : Seq[String] = getAllPossibleCategories();
 			var allCorrectSequences : Seq[Seq[String]] = Seq[Seq[String]]();
-			//for LABEL, sequences of correct tokens are all
+
+			//for an instruction starting with LABEL, sequences of correct tokens are all possible correct sequences
+			// of all instructions because a label can be followed by any instruction.
+
 			for (c <- allPossibleCategories) {
 				//checked for not LABEL to prevent infinite recursion	
 				if (c != "LABEL") {
 					allCorrectSequences = allCorrectSequences ++ getTokenSequencesOfCategory(c)
 				}
 			}
+
 			for (s <- allCorrectSequences) {
 				//var prependedLabelToCorrectSequence : Seq[String] = "LABEL" +: s
 				seqOfCorrectSeq = seqOfCorrectSeq :+ s;
 			}
-
 		}
-
 		return seqOfCorrectSeq;
 	}
 
 	def getCategoryOfToken(myToken: Token) : String = {
-		//println("getting category of token " + myToken.kind)
+
 		if (myToken.kind == "WORD") return "WORD";
-		else if (myToken.kind == "LABEL") return "LABEL" 
+		else if (myToken.kind == "LABEL") return "LABEL"
 		else return "NOCATEGORY"
 	}
 
@@ -87,7 +96,6 @@ object Analysis {
 
 	def isTokenLineCorrect(tokenLine: Seq[Token]) : Boolean  = {
 		//check if the line is a correct instruction. if empty, it's correct
-		//return true; //for now
 
 		if (tokenLine.length == 0)  {
 			return true; //an empty line is correct 
@@ -95,14 +103,16 @@ object Analysis {
 		var firstToken = tokenLine.apply(0);
 
 		var correctTokenSequences = getCorrectTokenKindSequences(firstToken);
-		//check if sequnece of kind of tokens is one of correctTokenSequences
+		//check if the given sequence of kind of tokens is one of correctTokenSequences
+
 		var seqOfKinds = Seq[String]();
+
 		for (i <- 0 until tokenLine.length) {
 			var token = tokenLine.apply(i);
+			//we're ignoring the labels at the start of instructions (ie definitions) because there can be arbitrary no. of them
 			if (token.kind != "LABEL" || seqOfKinds.length > 0 ) seqOfKinds = appendToSequence(seqOfKinds, token.kind);
 		}
 		
-		//println("is it correct syntactically? " + correctTokenSequences.contains(seqOfKinds));
 		return correctTokenSequences.contains(seqOfKinds);
 	}
 }
@@ -110,56 +120,49 @@ object Analysis {
 //pass 2
 
 object Synthesis {
-	def output(i: Int) { //better name?
+
+	def outputByte(i: Int) { //better name?
 		var byteArr = Array[Byte]();
 		byteArr = byteArr :+ ((i >> 24) & 0xff).toChar.toByte
 		byteArr = byteArr :+ ((i >> 16) & 0xff).toChar.toByte
 		byteArr = byteArr :+ ((i >> 8) & 0xff).toChar.toByte
 		byteArr = byteArr :+ ((i) & 0xff).toChar.toByte
 		System.out.write(byteArr)
-		//print(( (i >> 24) & 0xff).toChar);
-		//print(( (i >> 16) & 0xff).toChar);
-		//print(( (i >> 8) & 0xff).toChar);
-		//print(( i & 0xff).toChar);
-		// System.out.print((i >> 24).toChar);
-		// System.out.print((i >> 16).toChar);
-		// System.out.print((i >> 8).toChar);
-		// System.out.print((i).toChar);
-
 	}
+
+	//TODO: combine the getCategoryOfToken in Analysis and Synthesis together
 	def getCategoryOfToken(myToken: Token) : String = {
 		if (myToken.kind == "WORD") return "WORD"
 		else if (myToken.kind == "LABEL") return "LABEL"
 		else return "NOCATEGORY"
 	}
+
 	def printMachineCodeForWORD(tokenLine: Seq[Token]) {
 		var value = tokenLine.apply(1).toLong.toInt;
-		//println("lexeme valueInLong " + valueInLong);
-		//println("incoming int " + value)
-		output(value)
-		//print(value)
+		outputByte(value)
 	}
+
 	def printMachineCodeForLABEL(tokenLine: Seq[Token]) {
 		toMachineLanguage(tokenLine.drop(1)); //simply print the MC for the instruction after label
 	}
+
 	def printMachineCode(category: String, tokenLine: Seq[Token]) {
-		//println("here, category is " + category)
+
 		if (category == "WORD") {
 			printMachineCodeForWORD(tokenLine)	
 		}
+
 		else if (category == "LABEL") {
 			printMachineCodeForLABEL(tokenLine);
 		}
 	}
+
 	def toMachineLanguage(tokenLine: Seq[Token]) {
 		if (tokenLine.length == 0) return; //an empty line wont ouput anything
 		val firstToken = tokenLine.apply(0);
-		//println("firstToken " + firstToken.kind + " " + firstToken.lexeme)
 		val category = getCategoryOfToken(firstToken);
 
 		printMachineCode(category, tokenLine);
-		//println("here goes the final machine code output")
-
 	}
 }
 
@@ -200,7 +203,7 @@ object Asm {
 				val len = tokenLine.length;
 				if (len > 0) {
 					var firstToken = tokenLine.apply(0);
-			//	println("firstToken.kind is " + firstToken.kind)
+
 					if (firstToken.kind == "LABEL") {
 						var lex = firstToken.lexeme;
 						var id = lex.take(lex.length - 1)
@@ -218,20 +221,16 @@ object Asm {
 						}
 					}
 					else {
-				//	println("encountered just insturction no label. updating PC from " + ProgramCounter)
 						ProgramCounter = ProgramCounter + 4;
-				//	println(" updated to " + ProgramCounter)
 					}	
 				}
 			}
 			processLine(tokenLine);
-			//for (token <- tokenLine) {
-				//println("my token" + token)
-			//}
 		}
+
 		//printSymbolTable()
 		def replaceOperandLabelsWithValue(myToken: Token) : Token = {
-			//return new Token("blah", "blah");
+
 			if (myToken.kind == "ID") {
 				if (!symTable.contains(myToken.lexeme)) {
 					Console.err.println("ERROR");
@@ -240,12 +239,12 @@ object Asm {
 					return myToken;
 				}
 				else {
-				//	println("creating new token " + myToken.kind + " " + symTable(myToken.lexeme).toString )
 					return new Token("INT", symTable(myToken.lexeme).toString)
 				}
 			}
 			else return myToken;
 		}
+		
 		var sanitizedTokenLines = Seq[Seq[Token]]();
 		for (tokenLine <- tokenLines) {
 			//this only happens when all instructions are determined to be correct.
