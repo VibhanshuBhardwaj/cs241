@@ -1,17 +1,11 @@
 import Scanning._
+import Utilities._
 
 object Analysis {
 
 	def appendToSequence(s: Seq[String], toAdd: String) : Seq[String] = {
 		val ret = s :+ toAdd;
 		return ret;
-	}
-
-	def getAllPossibleCategories() : Seq[String] = {
-		var categories = Seq[String]();
-		categories = categories :+ "WORD"
-		categories = categories :+ "LABEL"
-		return categories
 	}
 
 	def getTokenSequencesOfCategory(category: String) : Seq[Seq[String]] = {
@@ -41,7 +35,12 @@ object Analysis {
 			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence3
 		}
 
-
+		else if (category == "JUMP") {
+			var correctSequence1 = Seq[String]();
+			correctSequence1 = appendToSequence(correctSequence1, "ID")
+			correctSequence1 = appendToSequence(correctSequence1, "REG")
+			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence1
+		}
 		//for label our correct sequences are intentionally not starting with LABEL itself
 		// because a label definition can be followed by an arbitrary number of label definitions
 		// eg, a: b: c: d: e: .word $2.
@@ -53,7 +52,7 @@ object Analysis {
 			seqOfCorrectSeq = seqOfCorrectSeq :+ correctSequence1;
 
 			var correctSequence2 = Seq[String]();
-			val allPossibleCategories : Seq[String] = getAllPossibleCategories();
+			val allPossibleCategories : Seq[String] = Utilities.getAllPossibleCategories();
 			var allCorrectSequences : Seq[Seq[String]] = Seq[Seq[String]]();
 
 			//for an instruction starting with LABEL, sequences of correct tokens are all possible correct sequences
@@ -74,15 +73,9 @@ object Analysis {
 		return seqOfCorrectSeq;
 	}
 
-	def getCategoryOfToken(myToken: Token) : String = {
-
-		if (myToken.kind == "WORD") return "WORD";
-		else if (myToken.kind == "LABEL") return "LABEL"
-		else return "NOCATEGORY"
-	}
 
 	def getCorrectTokenKindSequences(firstToken: Token) : Seq[Seq[String]] = {
-		var category = getCategoryOfToken(firstToken); // is it one of (add, sub, slt, sltu) or one of other 6 types
+		var category = Utilities.getCategoryOfToken(firstToken); // is it one of (add, sub, slt, sltu) or one of other 6 types
 		var correctTokenSequences = getTokenSequencesOfCategory(category)
 		return correctTokenSequences;
 	}
@@ -96,6 +89,8 @@ object Analysis {
 		var firstToken = tokenLine.apply(0);
 
 		var correctTokenSequences = getCorrectTokenKindSequences(firstToken);
+		//println("correctTokenSequences: ")
+		//correctTokenSequences.map(x=> print( x + ", "))
 		//check if the given sequence of kind of tokens is one of correctTokenSequences
 
 		var seqOfKinds = Seq[String]();

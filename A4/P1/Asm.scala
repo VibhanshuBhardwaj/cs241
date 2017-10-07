@@ -6,7 +6,7 @@
 
 import Scanning._
 import Analysis._
-
+import Utilities._
 import Synthesis._
 
 object Asm {
@@ -14,7 +14,7 @@ object Asm {
 	 * For example, tokenLines(3)(4) is the fifth token on line 4.
 	*/
 	val tokenLines: Seq[Seq[Token]] = io.Source.stdin.getLines.map(scan).toSeq
-
+	val allInstructionsWithKindID = Seq("jr", "jalr", "add", "sub") // PIN
 	def printSymbolTable() {
 		for ((k, v) <- symTable) {
 			Console.err.println(k + " " + v)
@@ -36,7 +36,7 @@ object Asm {
 		*/
 			//println("my tokenLine " + tokenLine);
 			val isTokenLineValid = Analysis.isTokenLineCorrect(tokenLine);
-			
+			//println("is my tokenLine valid? " + isTokenLineValid)
 
 			if (!isTokenLineValid) {
 				Console.err.println("ERROR")
@@ -70,12 +70,13 @@ object Asm {
 					}	
 				}
 			}
+
 			processLine(tokenLine);
 		}
 
 		//printSymbolTable()
 		def replaceOperandLabelsWithValue(myToken: Token) : Token = {
-
+			if (allInstructionsWithKindID.contains(myToken.lexeme)) return myToken; //ie an instruction like jr, not a label that needs to be replaced
 			if (myToken.kind == "ID") {
 				if (!symTable.contains(myToken.lexeme)) {
 					Console.err.println("ERROR");
@@ -93,9 +94,9 @@ object Asm {
 		var sanitizedTokenLines = Seq[Seq[Token]]();
 		for (tokenLine <- tokenLines) {
 			//this only happens when all instructions are determined to be correct.
-			var labelsReplacedWithValue = tokenLine.map( x=> replaceOperandLabelsWithValue(x))
-			sanitizedTokenLines =  sanitizedTokenLines :+ labelsReplacedWithValue
-			//we will convert them to binary here.
+			var labelsReplacedWithValue = tokenLine.map( x=> replaceOperandLabelsWithValue(x)) // PIN 
+			
+			sanitizedTokenLines = sanitizedTokenLines :+ labelsReplacedWithValue
 		}
 		for (tokenLine <- sanitizedTokenLines) { 
 			Synthesis.toMachineLanguage(tokenLine);
