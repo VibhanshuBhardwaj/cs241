@@ -21,7 +21,7 @@ object Synthesis {
 		toMachineLanguage(sanitizedTokenLine.drop(1)); //simply print the MC for the instruction after label
 	}
 
-	def printMachineCodeForJUMP(sanitizedTokenLine: Seq[Token]) { //PIN
+	def printMachineCodeForJUMP(sanitizedTokenLine: Seq[Token]) {
 		val firstToken = sanitizedTokenLine.apply(0);
 		val lex = firstToken.lexeme;
 		val valueOfRegister = sanitizedTokenLine.apply(1).toLong.toInt;
@@ -57,6 +57,38 @@ object Synthesis {
 		outputByte(intToPrint);
 
 	}
+	def printMachineCodeForBRANCH(sanitizedTokenLine: Seq[Token]) {
+		//print it here
+		val firstToken = sanitizedTokenLine.apply(0);
+		val lex = firstToken.lexeme;
+		val registerS = sanitizedTokenLine.apply(1).toLong.toInt;
+		val registerT = sanitizedTokenLine.apply(3).toLong.toInt;
+		val kindOfOffset = sanitizedTokenLine.apply(5).kind;
+		var offset = sanitizedTokenLine.apply(5).toLong.toInt; //only works for hex or int now
+		//println("offset " + sanitizedTokenLine.apply(5).toLong.toInt)
+		if (kindOfOffset != "HEXINT" && (offset > 32767 || offset < -32768)) {
+			Console.err.println("ERROR");
+			Console.err.println("Offset " + offset + " outside the range of 16 bit 2's complement")
+			System.exit(1);
+		}
+		else if (kindOfOffset == "HEXINT") {
+			if (offset > 65535 || offset < 0) {
+				Console.err.println("ERROR");
+				Console.err.println("Offset " + offset + " outside the range of possible hex values")
+				System.exit(1);
+			}
+		}
+		offset = (offset & 0xffff) //covert to 16 bit 2's complement
+		var intToPrint = 0;
+		intToPrint = (registerS << 21) | (registerT << 16) | offset | intToPrint;
+		if (lex == "beq") {
+			intToPrint = intToPrint | (4 << 26);
+		}
+		else if (lex == "bne") {
+			intToPrint = intToPrint | (5 << 26);
+		}
+		outputByte(intToPrint);
+	}
 	def printMachineCode(category: String, sanitizedTokenLine: Seq[Token]) {
 
 		if (category == "WORD") {
@@ -71,6 +103,9 @@ object Synthesis {
 		}
 		else if (category == "ASSS") {
 			printMachineCodeForASSS(sanitizedTokenLine);
+		}
+		else if (category == "BRANCH") {
+			printMachineCodeForBRANCH(sanitizedTokenLine);
 		}
 	}
 
