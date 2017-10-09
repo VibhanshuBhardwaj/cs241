@@ -124,11 +124,11 @@ object Synthesis {
 	}
 	def printMachineCodeForLS(sanitizedTokenLine: Seq[Token]) {
 		val lex = sanitizedTokenLine.apply(0).lexeme;
-		val registerT = sanitizedTokenLine.apply(1).lexeme;
+		val registerT = sanitizedTokenLine.apply(1).toLong.toInt;
 		val kindOfOffset = sanitizedTokenLine.apply(3).kind;
-		val offset = sanitizedTokenLine.apply(3).toLong.toInt;
-		val registerS = sanitizedTokenLine.apply(5);
-
+		var offset = sanitizedTokenLine.apply(3).toLong.toInt;
+		val registerS = sanitizedTokenLine.apply(5).toLong.toInt;
+		//println("lex " + lex + " registerT " + registerT + " kindOfOffset " +  kindOfOffset + " offset " + offset + "registerS " + registerS)
 		if (kindOfOffset == "INT") {
 			if (offset < -32768 || offset > 32767) {
 				Console.err.println("ERROR");
@@ -144,6 +144,8 @@ object Synthesis {
 			}
 		}
 		var instruction = 0;
+		offset = (offset & 0xffff); //PIN
+		instruction = instruction | offset;
 		instruction = (registerS << 21) | instruction;
 		instruction = (registerT << 16) | instruction;
 		if (lex == "lw") {
