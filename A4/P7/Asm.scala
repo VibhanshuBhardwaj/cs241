@@ -69,34 +69,7 @@ object Asm {
 		}
 
 		printSymbolTable()
-		def replaceOperandLabelsWithValue(myToken: Token, instrLex: String, lineNumber: Int) : Token = {
-			//if (allInstructionsWithKindID.contains(myToken.lexeme)) return myToken; //ie an instruction like jr, not a label that needs to be replaced
-			//println("myToken " + myToken.kind + " " +myToken.lexeme)
-			//println("instrLex " + instrLex)
-			if (myToken.kind == "ID") {
-				if (!symTable.contains(myToken.lexeme)) {
-					Console.err.println("ERROR");
-					Console.err.println("The label " + myToken.lexeme + " was never defined")
-					System.exit(1);
-					return myToken;
-				}
-				else { //the label exists
-						if (instrLex == ".word") {
-							return new Token("INT", symTable(myToken.lexeme).toString)
-						}
-						else if (instrLex == "beq" || instrLex == "bne") {
-							val labelVal = symTable(myToken.lexeme).toString.toInt;
-							val intOffset = (labelVal - (lineNumber*4) - 4) / 4;
-							//if ()
-							return new Token ("INT", intOffset.toString);
-						}
-						else return myToken;
-				}
-			}
-			else return myToken;
-		}
-		
-		var sanitizedTokenLines = Seq[Seq[Token]]();
+
 		def firstInstructionType(tokenLine: Seq[Token]) : String  = {
 			if (tokenLine.length == 0) return "NONE";
 			else if (tokenLine.apply(0).kind == "LABEL") {
@@ -105,47 +78,53 @@ object Asm {
 			else return tokenLine.apply(0).lexeme;
 
 		}
-		def getOnlyInstructions(tokenLines: Seq[Seq[Token]]) : Seq[Seq[Token]] = {
-			var ret = Seq[Seq[Token]]();
-			for (tokenLine <- tokenLines) {
-			//	println("tokenLine: " + tokenLine + " len: " + tokenLine.length)
-				val firstInstr = firstInstructionType(tokenLine)
-			//	println("firstInstr " + firstInstr);
-				if (tokenLine.length > 0 && firstInstr != "NONE") {
-					ret = ret :+ tokenLine
+		def replaceOperandsInToken(token: Token, instrLex: String, lineNumber: Int) : Token = {
+			if (token.kind == "ID") {
+				if (!symTable.contains(token.lexeme)) {
+					Console.err.println("ERROR");
+		 			Console.err.println("The label " + token.lexeme + " was never defined")
+		 			System.exit(1);
+		 			return token;
+				}
+				else { //the label exists
+					if (instrLex == ".word") {
+							return new Token("INT", symTable(token.lexeme).toString)
+		 			}
+					else if (instrLex == "beq" || instrLex == "bne") {
+		 					val labelVal = symTable(token.lexeme).toString.toInt;
+		 					val intOffset = (labelVal - (lineNumber*4) - 4) / 4;
+		 					//if ()
+		 					return new Token ("INT", intOffset.toString);
+		 			}
+		 			else return token;
 				}
 			}
-			return ret;
-			//println("tokenLines " + tokenLines)
-			//tokenLines.map((x: Seq[Token]) => println("bool:  "  + x + " "  + (x.length > 0 && firstInstructionType(x) != "LABEL")))
-			//return tokenLines.filter( (x: Seq[Token]) => (x.length > 0 && firstInstructionType(x) != "LABEL"));
-			
+			else return token;
 		}
-		tokenLines = getOnlyInstructions(tokenLines)//.filter(_.length > 0)
-		//println("tokenLines after only instructions: " + tokenLines.map(print))
-		for (i <- 0 until tokenLines.length) {
-			//this only happens when all instructions are determined to be correct.
-			var tokenLine = tokenLines.apply(i);
-			//println("tokenLine " + tokenLine)
-			val firstType = firstInstructionType(tokenLine)
-			var labelsReplacedWithValue = Seq[Token]();
-			//var labelsReplacedWithValue = tokenLine.map( x=> replaceOperandLabelsWithValue(x, firstType, i)) // PIN 
-			var encounteredInstruction = false;
-			for (token <- tokenLine) {
-				var newToken = token;
-				if (encounteredInstruction) {
-					newToken = replaceOperandLabelsWithValue(token, firstType, i)
-				}
-				if (token.kind != "LABEL") {
-					encounteredInstruction = true;
-				}
-				labelsReplacedWithValue = labelsReplacedWithValue :+ newToken
+		def replaceOperandLabelsWithValue(tokenLine: Seq[Token], lineNumber: Int) : Seq[Token] = {
+			if (tokenLine.length == 0) {
+				Console.err.println("shouldnt happen because I am calling this on nonNullTokenLines")
+				return Seq[Token]();
+			}
+			else if (tokenLine.apply(0).kind == "LABEL") {
+				return replaceOperandLabelsWithValue(tokenLine.drop(1), lineNumber)
+			}
+			else {
+				val firstToken = tokenLine.apply(0); 
+				//first token is always an instruction like jr, not something that needs to be replaced
+				val instructionLex = firstToken.lexeme;
+				val replacedOperands = tokenLine.drop(1).map(x => replaceOperandsInToken(x, instructionLex, lineNumber))
+				val ret = firstToken +: replacedOperands;
+				return ret;
+			}
+		}
+		//removing empty lines and lines with nothing except label defintions. like a:b:c:
+		
+		var nonNullTokenLines = tokenLines.filter(x => x.length > 0 && firstInstructionType(x) != "NONE")
 
-			}
-			//println("labelsReplacedWithValue " + labelsReplacedWithValue)
-			sanitizedTokenLines = sanitizedTokenLines :+ labelsReplacedWithValue
-		}
-		//println("sanitizedTokenLines " + sanitizedTokenLines)
+		var sanitizedTokenLines = nonNullTokenLines.zipWithIndex.map{ case (tokenLine, index) => replaceOperandLabelsWithValue(tokenLine, index)}
+
+		
 		for (tokenLine <- sanitizedTokenLines) { 
 			Synthesis.toMachineLanguage(tokenLine);
 		}
@@ -155,6 +134,6 @@ object Asm {
 		val t0 = System.nanoTime();
 		assemble()
 		val t1 = System.nanoTime();
-		println("time taken is " + (t1 - t0).toString + " nanoseconds")
+		//println("time taken is " + (t1 - t0).toString + " nanoseconds")
 	}
 }
