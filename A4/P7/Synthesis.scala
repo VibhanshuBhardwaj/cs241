@@ -135,6 +135,9 @@ object Synthesis {
 				Console.err.println("Offset " + offset + " outside the range of 16 bit 2's complement")
 				System.exit(1);
 			}
+			else  {
+				offset = (offset & 0xffff)
+			}
 		}
 		else if (kindOfOffset == "HEXINT") {
 			if (offset > 0xffff) {
@@ -142,19 +145,22 @@ object Synthesis {
 				Console.err.println("Offset " + offset + " outside the range of HEX")
 				System.exit(1);
 			}
+
 		}
 		var instruction = 0;
-		offset = (offset & 0xffff); //PIN
-		instruction = instruction | offset;
-		instruction = (registerS << 21) | instruction;
-		instruction = (registerT << 16) | instruction;
+		//offset = (offset & 0xffff); //PIN
+		//instruction = instruction | offset;
+		//instruction = (registerS << 21) | instruction;
+		//instruction = (registerT << 16) | instruction;
 		if (lex == "lw") {
-			instruction = instruction | (35 << 26)
+			outputByte(0x8c000000|(registerS<<21)|(registerT<<16)|offset)
+			//instruction = instruction | 0x8c000000
 		}
 		else if (lex =="sw") {
-			instruction = instruction | (43 << 26)
+			outputByte(0xac000000|(registerS<<21)|(registerT<<16)|offset)
+			//instruction = instruction | 0xac000000
 		}
-		outputByte(instruction)
+		//outputByte(instruction)
 	}
 	def printMachineCode(category: String, sanitizedTokenLine: Seq[Token]) {
 

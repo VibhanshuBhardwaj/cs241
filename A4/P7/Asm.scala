@@ -151,5 +151,10 @@ object Asm {
 		}
 	}
 
-	def main(args: Array[String]): Unit = assemble()
+	def main(args: Array[String]): Unit = {
+		val t0 = System.nanoTime();
+		assemble()
+		val t1 = System.nanoTime();
+		println("time taken is " + (t1 - t0).toString + " nanoseconds")
+	}
 }
