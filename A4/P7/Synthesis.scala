@@ -2,7 +2,9 @@ import Scanning._
 import Utilities._
 
 object Synthesis {
-
+	def inRange(i: Int) : Boolean = {
+		return (i >= -32767 && i <= 32767)
+	}
 	def outputByte(i: Int) { //better name?
 		var byteArr = Array[Byte]();
 		byteArr = byteArr :+ ((i >> 24) & 0xff).toChar.toByte
@@ -129,7 +131,7 @@ object Synthesis {
 		var offset = sanitizedTokenLine.apply(3).toLong.toInt;
 		val registerS = sanitizedTokenLine.apply(5).toLong.toInt;
 		//println("lex " + lex + " registerT " + registerT + " kindOfOffset " +  kindOfOffset + " offset " + offset + "registerS " + registerS)
-		if (kindOfOffset == "INT") {
+/*		if (kindOfOffset == "INT") {
 			if (offset < -32768 || offset > 32767) {
 				Console.err.println("ERROR");
 				Console.err.println("Offset " + offset + " outside the range of 16 bit 2's complement")
@@ -146,7 +148,20 @@ object Synthesis {
 				System.exit(1);
 			}
 
+		}*/
+		if (kindOfOffset != "HEXINT" && (offset > 32767 || offset < -32768)) {
+			Console.err.println("ERROR");
+			Console.err.println("Offset " + offset + " outside the range of 16 bit 2's complement")
+			System.exit(1);
 		}
+		else if (kindOfOffset == "HEXINT") {
+			if (offset > 65535 || offset < 0) {
+				Console.err.println("ERROR");
+				Console.err.println("Offset " + offset + " outside the range of possible hex values")
+				System.exit(1);
+			}
+		}
+		offset = (offset & 0xffff)
 		var instruction = 0;
 		//offset = (offset & 0xffff); //PIN
 		//instruction = instruction | offset;
