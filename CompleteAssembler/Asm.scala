@@ -5,14 +5,10 @@ import Synthesis._
 
 object Asm {
 
-	/* A sequence of sequences of tokens, where each inside sequence represents a line.
-	 * For example, tokenLines(3)(4) is the fifth token on line 4.
-	*/
 	var tokenLines: Seq[Seq[Token]] = io.Source.stdin.getLines.map(scan).toSeq
 	var symTable = collection.mutable.Map[String, Int]()
 
 	def printSymbolTable() {
-
 		for ((k, v) <- symTable) {
 			Console.err.println(k + " " + v)
 		}
@@ -53,7 +49,6 @@ object Asm {
 			return firstInstructionType(tokenLine.drop(1));
 		}
 		else return tokenLine.apply(0).lexeme;
-
 	}
 
 	def replaceOperandsInToken(token: Token, instrLex: String, lineNumber: Int) : Token = {
@@ -106,9 +101,7 @@ object Asm {
 	def assemble(): Unit = {
 
 		var programCounter = 0;
-
 		for (tokenLine <- tokenLines) {
-		
 			val isTokenLineValid = Analysis.isTokenLineCorrect(tokenLine);
 
 			if (!isTokenLineValid) {
@@ -121,11 +114,8 @@ object Asm {
 
 		printSymbolTable()
 
-
-		//removing empty lines and lines with nothing except label defintions. like a:b:c:
-		
+		//removing empty lines and lines with nothing except label defintions. like a:b:c:		
 		var nonNullTokenLines = tokenLines.filter(x => x.length > 0 && firstInstructionType(x) != "NONE")
-
 		var sanitizedTokenLines = nonNullTokenLines.zipWithIndex.map{ case (tokenLine, index) => replaceOperandLabelsWithValue(tokenLine, index)}
 
 		for (tokenLine <- sanitizedTokenLines) { 

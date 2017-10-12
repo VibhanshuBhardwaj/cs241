@@ -4,7 +4,6 @@ import Utilities._
 object Analysis {
 
 	def appendToSequence(s: Seq[String], toAdd: String) : Seq[String] = {
-
 		val ret = s :+ toAdd;
 		return ret;
 	}
@@ -18,7 +17,6 @@ object Analysis {
 		}
 
 		else if (category == "WORD") {
-
 			val correctSequence1 = Seq("WORD", "INT");
 			val correctSequence2 = Seq("WORD", "HEXINT");
 			val correctSequence3 = Seq("WORD", "ID");
@@ -39,7 +37,6 @@ object Analysis {
 		}
 
 		else if (category == "BRANCH") {
-
 			var correctSequence1 = Seq("ID", "REG", "COMMA", "REG", "COMMA", "INT");
 			var correctSequence2 = Seq("ID", "REG", "COMMA", "REG", "COMMA", "HEXINT");
 			var correctSequence3 = Seq("ID", "REG", "COMMA", "REG", "COMMA", "ID");
@@ -60,7 +57,6 @@ object Analysis {
 		}
 
 		else if (category == "LS") {
-
 			var correctSequence1 = Seq("ID", "REG", "COMMA", "INT", "LPAREN", "REG", "RPAREN");
 			var correctSequence2 = Seq("ID", "REG", "COMMA", "HEXINT", "LPAREN", "REG", "RPAREN");
 
@@ -87,17 +83,15 @@ object Analysis {
 			// of all instructions because a label can be followed by any instruction.
 
 			for (c <- allPossibleCategories) {
-				//checked for not LABEL to prevent infinite recursion	
-				if (c != "LABEL") {
+				
+				if (c != "LABEL") {//checked for not LABEL to prevent infinite recursion
 					allCorrectSequences = allCorrectSequences ++ getTokenSequencesOfCategory(c)
 				}
 			}
-
 			for (s <- allCorrectSequences) {
 				seqOfCorrectSeq = seqOfCorrectSeq :+ s;
 			}
 		}
-		
 		return seqOfCorrectSeq;
 	}
 
