@@ -1,0 +1,35 @@
+4
+cat
+dog
+iguana
+mouse
+5
+START
+Cat
+CatDog
+CatDogIguana
+CatDogIguanaMouse
+START
+1
+CatDogIguanaMouse
+20
+CatDogIguanaMouse cat CatDogIguanaMouse
+CatDogIguanaMouse dog CatDogIguanaMouse
+CatDogIguanaMouse iguana CatDogIguanaMouse
+CatDogIguanaMouse mouse CatDogIguanaMouse
+Cat dog CatDog
+Cat cat Cat
+Cat iguana Cat
+Cat mouse Cat
+CatDog iguana CatDogIguana
+CatDog cat CatDog
+CatDog mouse CatDog
+CatDog dog CatDog
+CatDogIguana mouse CatDogIguanaMouse
+CatDogIguana cat CatDogIguana
+CatDogIguana dog CatDogIguana
+CatDogIguana iguana CatDogIguana
+START cat Cat
+START dog START
+START iguana START
+START mouse START
