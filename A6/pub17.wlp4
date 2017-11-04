@@ -1,0 +1,9 @@
+int z(int z, int z, int z) {
+  return if while else;
+}
+
+int wain(int *x, int ***y) {
+  int x = wain(&x, &&&x);
+  wain = x(y, z);
+  return wain(z, 12345, 1234567890, 98765432123456789);
+}
