@@ -9,7 +9,21 @@ object MIPSOutput {
 		output += s;
 		return output;
 	}
+	def addProlog(sizeSymTable: Int) {
+		output+= "lis $4"
+		output+= ".word 4"
+		output+= "sub $29, $30, $4"
+		output+= "lis $12"
+		output+= s".word $sizeSymTable"
+		output+= "sub $30, $30, $12"
+		output+= "sw $1, 0($29)"
+		output+= "sw $2, -4($29)"
 
+	}
+	def addEpilog() {
+		output+="add $30, $29, $4"
+		output+="jr $31"
+	}
 	def printOutput() {
 		for (inst <- output) println(inst);
 	}
