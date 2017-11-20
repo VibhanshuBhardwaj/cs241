@@ -10,15 +10,97 @@ object TypeChecker {
 	type FunctionSymTable = (String, Map[String, String]);
 	var signatureMap = Map[String, String]();
 	var paramMap = Map[String, String]();
+	var FINALSYMTABLE = ArrayBuffer[FunctionSymTable]();
 
 	def raiseError(message: String) : String = {
 		Console.err.println("ERROR: " + message);
 		System.exit(1);
 		return "exiting";
 	}
-	def setup(sm: Map[String, String], pm: Map[String, String]) {
+	def setup(sm: Map[String, String], pm: Map[String, String], symTable: ArrayBuffer[FunctionSymTable]) {
 		signatureMap = sm;
 		paramMap = pm;
+		FINALSYMTABLE = symTable;
+	}
+	def getTypeDCL(dcl: Node) : String = {
+		val dcl1Tree = dcl;
+		val dcl1TypeTree = dcl1Tree.children(0);
+		val dcl1ID = dcl1Tree.children(1).lex;
+		var dcl1Type = "";
+		for (c<- dcl1TypeTree.children) {
+			dcl1Type = dcl1Type + c.lex;
+		}
+		return dcl1Type;
+
+	}
+	def checkTypesProcedures(procedures: Node) {
+		//println("checking types");
+		
+		if (procedures.children.length == 1) { //
+			val mainTree = procedures.children(0);
+			val secondDCLtype = getTypeDCL(mainTree.children(5));
+			if (secondDCLtype != "int") {
+				Console.err.println("ERROR: second param of wain must be int")
+				System.exit(1);
+			}
+			TypeChecker.checkTypes(mainTree.children(8), FINALSYMTABLE, "wain");
+			checkTypesStatements(mainTree.children(9), "wain");
+
+			val retType= TypeChecker.checkTypes(mainTree.children(11), FINALSYMTABLE, "wain");
+			if (retType != "int") {
+				Console.err.println("ERROR: returning a non int value")
+				System.exit(1);
+			}
+		}
+		else {
+			checkTypesONEProcedure(procedures.children(0));
+			checkTypesProcedures(procedures.children(1));
+		}
+	}
+	def checkTypesONEProcedure(procedure: Node) {
+		TypeChecker.checkTypes(procedure.children(6), FINALSYMTABLE, procedure.children(1).lex);
+		checkTypesStatements(procedure.children(7), procedure.children(1).lex);
+		
+		val retType = TypeChecker.checkTypes(procedure.children(9), FINALSYMTABLE, procedure.children(1).lex);
+		if (retType != "int") {
+			Console.err.println("ERROR: returning a non int value")
+			System.exit(1);
+		}
+	}
+	def checkTypeOneStatement(statement: Node, scope: String) {
+		if(statement.rule == "statement lvalue BECOMES expr SEMI") {
+			val Exp1 = TypeChecker.checkTypes(statement.children(0), FINALSYMTABLE, scope);
+			val Exp2 = TypeChecker.checkTypes(statement.children(2), FINALSYMTABLE, scope);
+			if (Exp1 != Exp2) {
+				Console.err.println("ERROR: assigning " + Exp1 + " to " + Exp2);
+				System.exit(1);
+			}
+		}
+		else if (statement.rule.contains("PRINTLN")) {
+			val Exp1 = TypeChecker.checkTypes(statement.children(2), FINALSYMTABLE, scope);
+			if (Exp1 != "int") {
+				Console.err.println("ERROR: printing non int value");
+				System.exit(1);
+			}
+		}
+		else if (statement.rule.contains("DELETE")) {
+			val Exp1 = TypeChecker.checkTypes(statement.children(3), FINALSYMTABLE, scope);
+			if (Exp1 != "int*") {
+				Console.err.println("ERROR: deleting a non ptr value");
+				System.exit(1);
+			}
+		}
+		for (c<- statement.children) {
+			if (c.value == "statements") checkTypesStatements(c, scope);
+			else if (c.value == "expr") TypeChecker.checkTypes(c, FINALSYMTABLE, scope);
+			else if (c.value == "test") TypeChecker.checkTypes(c, FINALSYMTABLE, scope);
+		}
+	}
+	def checkTypesStatements(statements: Node, scope: String) {
+		for (c<- statements.children) {
+			if (c.value == "statement") checkTypeOneStatement(c, scope);
+			else checkTypesStatements(c, scope);
+		}
 	}
 	def checkTypes(tree: Node, symTable: ArrayBuffer[FunctionSymTable], scope: String) : String = {
 

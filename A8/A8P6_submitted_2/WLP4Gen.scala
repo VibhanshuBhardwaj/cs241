@@ -462,11 +462,6 @@ object WLP4Gen {
 		TypeChecker.setup(signatureMap, paramMap);
 		if (procedures.children.length == 1) { //
 			val mainTree = procedures.children(0);
-			val secondDCLtype = getTypeDCL(mainTree.children(5));
-			if (secondDCLtype != "int") {
-				Console.err.println("ERROR: second param of wain must be int")
-				System.exit(1);
-			}
 			TypeChecker.checkTypes(mainTree.children(8), FINALSYMTABLE, "wain");
 			checkTypesStatements(mainTree.children(9), "wain");
 
@@ -492,28 +487,6 @@ object WLP4Gen {
 		}
 	}
 	def checkTypeOneStatement(statement: Node, scope: String) {
-		if(statement.rule == "statement lvalue BECOMES expr SEMI") {
-			val Exp1 = TypeChecker.checkTypes(statement.children(0), FINALSYMTABLE, scope);
-			val Exp2 = TypeChecker.checkTypes(statement.children(2), FINALSYMTABLE, scope);
-			if (Exp1 != Exp2) {
-				Console.err.println("ERROR: assigning " + Exp1 + " to " + Exp2);
-				System.exit(1);
-			}
-		}
-		else if (statement.rule.contains("PRINTLN")) {
-			val Exp1 = TypeChecker.checkTypes(statement.children(2), FINALSYMTABLE, scope);
-			if (Exp1 != "int") {
-				Console.err.println("ERROR: printing non int value");
-				System.exit(1);
-			}
-		}
-		else if (statement.rule.contains("DELETE")) {
-			val Exp1 = TypeChecker.checkTypes(statement.children(3), FINALSYMTABLE, scope);
-			if (Exp1 != "int*") {
-				Console.err.println("ERROR: deleting a non ptr value");
-				System.exit(1);
-			}
-		}
 		for (c<- statement.children) {
 			if (c.value == "statements") checkTypesStatements(c, scope);
 			else if (c.value == "expr") TypeChecker.checkTypes(c, FINALSYMTABLE, scope);

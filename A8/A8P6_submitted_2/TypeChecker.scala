@@ -108,7 +108,7 @@ object TypeChecker {
 			else return raiseError("ERROR: new int[] must have int inside")
 		}
 		else if (rule == "factor ID LPAREN RPAREN") {
-			return "int";
+			return signatureMap(children(0).lex);
 		}
 		else if (rule == "factor ID LPAREN arglist RPAREN") {
 			val argTypes = checkArglistTypes(children(2), symTable, scope, "");
