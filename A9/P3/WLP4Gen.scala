@@ -177,6 +177,34 @@ object WLP4Gen {
 			}
 		}
 	}
+	def generateCodeForStatements(stmts: Node) : Unit = {
+		val children = stmts.children;
+		if (children.length == 2) {
+			generateCodeForStatements(children(0));
+			generateCodeForONEStatement(children(1));
+		}
+	}
+	def generateCodeForONEStatement(stmt: Node) : Unit = {
+		val children = stmt.children;
+		if (stmt.rule.contains("PRINTLN")) {
+			println("print called")
+			generateCodeForExpr(children(2));
+			//val push1Inst = "sw $1, -4($30)";
+			//val reduceStackInst = "sub $30, $30, $4";
+			val copyTo1 = "add $1, $3, $0";
+			val lis10 = "lis $10";
+			val printWord = ".word print"
+			val callPrint = ".jalr $10"
+			val restore1 = "lw $1, 0($29)"
+			MIPSOutput.append(copyTo1);
+			MIPSOutput.append(lis10);
+			MIPSOutput.append(printWord);
+			MIPSOutput.append(callPrint);
+			MIPSOutput.append(restore1);
+
+
+		}
+	}
 	def generateCode(proceduresTree: Node) : Unit = {
 		val children = proceduresTree.children;
 		val mainTree = children(0);
