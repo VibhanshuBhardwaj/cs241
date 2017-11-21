@@ -226,9 +226,51 @@ object WLP4Gen {
 		var pop5Inst = "lw $5, -4($30)";
 		MIPSOutput.append(reduceStackInst);
 		MIPSOutput.append(pop5Inst)
+		
 		if (children(1).value == "LT") {
+			MIPSOutput.append("; LT code")
 			val sltInst = "slt $3, $5, $3";
 			MIPSOutput.append(sltInst);
+		}
+		else if (children(1).value == "GT") {
+			MIPSOutput.append("; GT code")
+			val sltInst = "slt $3, $3, $5";
+			MIPSOutput.append(sltInst);
+		}
+		else if (children(1).value == "GE") {
+			MIPSOutput.append("; GE code. inverting LT code")
+			val sltInst = "slt $3, $5, $3";
+			val not3 = "sub $3, $11, $3";
+			MIPSOutput.append(sltInst);
+			MIPSOutput.append(not3);
+		}
+		else if (children(1).value == "LE") {
+			MIPSOutput.append("; LE code. inverting GT code")
+			val sltInst = "slt $3, $3, $5";
+			val not3 = "sub $3, $11, $3";
+			MIPSOutput.append(sltInst);
+			MIPSOutput.append(not3);
+		}
+		else if (children(1).value == "NE") {
+			MIPSOutput.append("; NE code");
+			val sltInst1 = "slt $6, $3, $5";
+			val sltInst2 = "slt $7, $5, $3";
+			val add = "add $3, $6, $7";
+			MIPSOutput.append(sltInst1);
+			MIPSOutput.append(sltInst2);
+			MIPSOutput.append(add);
+		}
+		else if (children(1).value == "EQ") {
+			MIPSOutput.append("; EQ code. inverting NE");
+			val sltInst1 = "slt $6, $3, $5";
+			val sltInst2 = "slt $7, $5, $3";
+			val add = "add $3, $6, $7";
+			val not3 = "sub $3, $11, $3";
+			MIPSOutput.append(sltInst1);
+			MIPSOutput.append(sltInst2);
+			MIPSOutput.append(add);
+			MIPSOutput.append(not3);
+
 		}
 	}
 	def getLexLvalue(lvalue: Node) : String = {
@@ -279,7 +321,28 @@ object WLP4Gen {
 			var newNumberOfWhiles = generateCodeForWhile(stmt, nWhile);
 			return newNumberOfWhiles;
 		}
+		else if (stmt.rule.contains("IF")) {
+			var newNumberOfLabels = generateCodeForIF(stmt, nWhile);
+			return newNumberOfLabels;
+		}
 		else return nWhile;
+	}
+	def generateCodeForIF(stmt: Node, nLabels: Int) : Int = {
+		MIPSOutput.append("; generating for if")
+		val children = stmt.children;
+		generateCodeForTest(children(2));
+		val startLabel = "sIF" + nLabels;
+		val endLabel = "eIF" + nLabels;
+		val branchToTrue = "bne $3, $0, " + startLabel;
+		MIPSOutput.append(branchToTrue)
+		val newNumberOfLabels = generateCodeForStatements(9);
+		val branchToEND = "beq $0, $0, " + endLabel;
+		MIPSOutput.append(branchToEND);
+		MIPSOutput.append(startLabel+":")
+		newNumberOfLabels+= generateCodeForStatements(5);
+		MIPSOutput.append(endLabel+":")
+		return newNumberOfLabels;
+
 	}
 	def generateCodeForWhile(stmt: Node, nWhile: Int) : Int = {
 		//println("generateCodeForWhile with " + nWhile.toString)

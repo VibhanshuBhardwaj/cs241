@@ -11,7 +11,7 @@ import SymbolTableBuilder._;
 import ParseTreeBuilder._;
 
 object WLP4Gen {
-	//var nWhile = 1;
+	var numberOfWhiles = 1;
 	var input = ArrayBuffer[String]();
 	
 	var signatureMap = Map[String, String]();
@@ -178,12 +178,14 @@ object WLP4Gen {
 			}
 		}
 	}
-	def generateCodeForStatements(stmts: Node, nWhile: Int) : Unit = {
+	def generateCodeForStatements(stmts: Node, nWhile: Int) : Int = {
 		val children = stmts.children;
 		if (children.length == 2) {
-			generateCodeForStatements(children(0), nWhile);
-			generateCodeForONEStatement(children(1), nWhile);
+			var newNumberOfWhiles = generateCodeForStatements(children(0), nWhile);
+			var newNumberOfWhiles2 = generateCodeForONEStatement(children(1), newNumberOfWhiles);
+			return newNumberOfWhiles2;
 		}
+		else return nWhile;
 	}
 	def generateCodeForDCLs(dcls: Node) : Unit = {
 		val children = dcls.children;
@@ -271,7 +273,6 @@ object WLP4Gen {
 
 		}
 	}
-
 	def getLexLvalue(lvalue: Node) : String = {
 		if (lvalue.children.length == 1) {
 			val lex= lvalue.children(0).lex;
@@ -279,7 +280,7 @@ object WLP4Gen {
 		}
 		else return getLexLvalue(lvalue.children(1));
 	}
-	def generateCodeForONEStatement(stmt: Node, nWhile: Int) : Unit = {
+	def generateCodeForONEStatement(stmt: Node, nWhile: Int) : Int = {
 		val children = stmt.children;
 		if (stmt.rule.contains("PRINTLN")) {
 			//println("print called")
@@ -296,6 +297,7 @@ object WLP4Gen {
 			MIPSOutput.append(printWord);
 			MIPSOutput.append(callPrint);
 			MIPSOutput.append(restore1);
+			return nWhile;
 		}
 		else if (stmt.rule == "statement lvalue BECOMES expr SEMI") {
 			val lex = getLexLvalue(children(0));
@@ -313,14 +315,20 @@ object WLP4Gen {
 					MIPSOutput.append(inst);
 				}
 			}
+			return nWhile;
 		}
 		else if (stmt.rule.contains("WHILE")) {
-			generateCodeForWhile(stmt, nWhile)
+			var newNumberOfWhiles = generateCodeForWhile(stmt, nWhile);
+			return newNumberOfWhiles;
 		}
+		else return nWhile;
 	}
-	def generateCodeForWhile(stmt: Node, nWhile: Int) = {
+	def generateCodeForWhile(stmt: Node, nWhile: Int) : Int = {
+		//println("generateCodeForWhile with " + nWhile.toString)
+		MIPSOutput.append("; generating code for while ")
 		val children = stmt.children;
 		MIPSOutput.append("sw" + nWhile.toString+ ":");
+
 		generateCodeForTest(children(2));
 		val branchToEnd = "beq $3, $0, 1" //+ nWhile.toString;
 		val temp = "beq $3, $11, 3"
@@ -332,7 +340,7 @@ object WLP4Gen {
 		MIPSOutput.append(t1);
 		MIPSOutput.append(t2);
 		MIPSOutput.append(t3);
-		generateCodeForStatements(children(5), nWhile + 1);
+		var newNumberOfWhiles = generateCodeForStatements(children(5), nWhile + 1);
 		val goToStart1 = "lis $6";// + nWhile.toString;
 		val goToStart2 = ".word sw" + nWhile.toString;
 		val goToStart3 = "jr $6"
@@ -340,6 +348,7 @@ object WLP4Gen {
 		MIPSOutput.append(goToStart2);
 		MIPSOutput.append(goToStart3);
 		MIPSOutput.append("ew" + nWhile.toString + ":");
+		return newNumberOfWhiles ;
 	}
 	def generateCode(proceduresTree: Node) : Unit = {
 		val children = proceduresTree.children;
@@ -358,7 +367,7 @@ object WLP4Gen {
 		val stmts = mainTree.children(9);
 		val dcls = mainTree.children(8);
 		generateCodeForDCLs(dcls);
-		generateCodeForStatements(stmts, 1);
+		generateCodeForStatements(stmts, numberOfWhiles);
 		generateCodeForExpr(expr);
 		//val id = expr.children(0).children(0);
 		//val lex = id.lex;

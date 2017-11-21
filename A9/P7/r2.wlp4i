@@ -17,31 +17,50 @@ ID b
 RPAREN )
 LBRACE {
 dcls dcls dcl BECOMES NUM SEMI
+dcls dcls dcl BECOMES NUM SEMI
+dcls dcls dcl BECOMES NUM SEMI
 dcls
 dcl type ID
 type INT
 INT int
 ID x
 BECOMES =
-NUM 0
+NUM 15
 SEMI ;
+dcl type ID
+type INT
+INT int
+ID y
+BECOMES =
+NUM 16
+SEMI ;
+dcl type ID
+type INT
+INT int
+ID c
+BECOMES =
+NUM 10
+SEMI ;
+statements statements statement
 statements statements statement
 statements
 statement WHILE LPAREN test RPAREN LBRACE statements RBRACE
 WHILE while
 LPAREN (
-test expr LE expr
+test expr LT expr
 expr term
 term factor
 factor ID
 ID x
-LE <=
+LT <
 expr term
 term factor
 factor NUM
-NUM 1
+NUM 20
 RPAREN )
 LBRACE {
+statements statements statement
+statements statements statement
 statements statements statement
 statements statements statement
 statements
@@ -63,6 +82,99 @@ expr term
 term factor
 factor ID
 ID x
+PLUS +
+term factor
+factor NUM
+NUM 1
+SEMI ;
+statement lvalue BECOMES expr SEMI
+lvalue ID
+ID c
+BECOMES =
+expr term
+term factor
+factor NUM
+NUM 5
+SEMI ;
+statement WHILE LPAREN test RPAREN LBRACE statements RBRACE
+WHILE while
+LPAREN (
+test expr GE expr
+expr term
+term factor
+factor ID
+ID c
+GE >=
+expr term
+term factor
+factor NUM
+NUM 7
+RPAREN )
+LBRACE {
+statements statements statement
+statements statements statement
+statements
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
+expr term
+term factor
+factor ID
+ID c
+RPAREN )
+SEMI ;
+statement lvalue BECOMES expr SEMI
+lvalue ID
+ID c
+BECOMES =
+expr expr PLUS term
+expr term
+term factor
+factor ID
+ID c
+PLUS +
+term factor
+factor NUM
+NUM 1
+SEMI ;
+RBRACE }
+RBRACE }
+statement WHILE LPAREN test RPAREN LBRACE statements RBRACE
+WHILE while
+LPAREN (
+test expr EQ expr
+expr term
+term factor
+factor ID
+ID y
+EQ ==
+expr term
+term factor
+factor NUM
+NUM 20
+RPAREN )
+LBRACE {
+statements statements statement
+statements statements statement
+statements
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
+expr term
+term factor
+factor ID
+ID y
+RPAREN )
+SEMI ;
+statement lvalue BECOMES expr SEMI
+lvalue ID
+ID y
+BECOMES =
+expr expr PLUS term
+expr term
+term factor
+factor ID
+ID y
 PLUS +
 term factor
 factor NUM
