@@ -335,11 +335,11 @@ object WLP4Gen {
 		val endLabel = "eIF" + nLabels;
 		val branchToTrue = "bne $3, $0, " + startLabel;
 		MIPSOutput.append(branchToTrue)
-		val newNumberOfLabels = generateCodeForStatements(9);
+		var newNumberOfLabels = generateCodeForStatements(children(9), nLabels + 1);
 		val branchToEND = "beq $0, $0, " + endLabel;
 		MIPSOutput.append(branchToEND);
 		MIPSOutput.append(startLabel+":")
-		newNumberOfLabels+= generateCodeForStatements(5);
+		newNumberOfLabels+= generateCodeForStatements(children(5), newNumberOfLabels + 1);
 		MIPSOutput.append(endLabel+":")
 		return newNumberOfLabels;
 
