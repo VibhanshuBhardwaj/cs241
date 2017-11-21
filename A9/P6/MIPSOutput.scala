@@ -14,6 +14,8 @@ object MIPSOutput {
 		output+= ".import print"
 		output+= "lis $4"
 		output+= ".word 4"
+		output+= "lis $11"
+		output+= ".word 1"
 		output+= "sub $29, $30, $4"
 		output+= "lis $12"
 		output+= s".word $actualSize"

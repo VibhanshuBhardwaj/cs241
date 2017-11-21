@@ -11,6 +11,7 @@ import SymbolTableBuilder._;
 import ParseTreeBuilder._;
 
 object WLP4Gen {
+	//var nWhile = 1;
 	var input = ArrayBuffer[String]();
 	
 	var signatureMap = Map[String, String]();
@@ -177,11 +178,11 @@ object WLP4Gen {
 			}
 		}
 	}
-	def generateCodeForStatements(stmts: Node) : Unit = {
+	def generateCodeForStatements(stmts: Node, nWhile: Int) : Unit = {
 		val children = stmts.children;
 		if (children.length == 2) {
-			generateCodeForStatements(children(0));
-			generateCodeForONEStatement(children(1));
+			generateCodeForStatements(children(0), nWhile);
+			generateCodeForONEStatement(children(1), nWhile);
 		}
 	}
 	def generateCodeForDCLs(dcls: Node) : Unit = {
@@ -207,10 +208,35 @@ object WLP4Gen {
 				}
 			}
 		}
-		
-		
 	}
-	def generateCodeForONEStatement(stmt: Node) : Unit = {
+	def generateCodeForTest(test: Node) : Unit = {
+		val children = test.children;
+		val exp1 = children(0);
+		val exp2 = children(2);
+		generateCodeForExpr(exp1);
+		var push3Inst = "sw $3, -4($30)"
+		var extendStackInst = "sub $30, $30, $4"
+
+		MIPSOutput.append(push3Inst);
+		MIPSOutput.append(extendStackInst);
+		generateCodeForExpr(exp2);
+		var reduceStackInst = "add $30, $30, $4";
+		var pop5Inst = "lw $5, -4($30)";
+		MIPSOutput.append(reduceStackInst);
+		MIPSOutput.append(pop5Inst)
+		if (children(1).value == "LT") {
+			val sltInst = "slt $3, $5, $3";
+			MIPSOutput.append(sltInst);
+		}
+	}
+	def getLexLvalue(lvalue: Node) : String = {
+		if (lvalue.children.length == 1) {
+			val lex= lvalue.children(0).lex;
+			return lex;
+		}
+		else return getLexLvalue(lvalue.children(1));
+	}
+	def generateCodeForONEStatement(stmt: Node, nWhile: Int) : Unit = {
 		val children = stmt.children;
 		if (stmt.rule.contains("PRINTLN")) {
 			//println("print called")
@@ -229,7 +255,7 @@ object WLP4Gen {
 			MIPSOutput.append(restore1);
 		}
 		else if (stmt.rule == "statement lvalue BECOMES expr SEMI") {
-			val lex = children(0).children(0).lex;
+			val lex = getLexLvalue(children(0));
 			val expr = children(2);
 			generateCodeForExpr(expr);
 			
@@ -245,6 +271,32 @@ object WLP4Gen {
 				}
 			}
 		}
+		else if (stmt.rule.contains("WHILE")) {
+			generateCodeForWhile(stmt, nWhile)
+		}
+	}
+	def generateCodeForWhile(stmt: Node, nWhile: Int) = {
+		val children = stmt.children;
+		MIPSOutput.append("sw" + nWhile.toString+ ":");
+		generateCodeForTest(children(2));
+		val branchToEnd = "beq $3, $0, 1" //+ nWhile.toString;
+		val temp = "beq $3, $11, 3"
+		val t1= "lis $6"
+		val t2 = ".word ew" + nWhile.toString;
+		val t3 = "jr $6";
+		MIPSOutput.append(branchToEnd);
+		MIPSOutput.append(temp);
+		MIPSOutput.append(t1);
+		MIPSOutput.append(t2);
+		MIPSOutput.append(t3);
+		generateCodeForStatements(children(5), nWhile + 1);
+		val goToStart1 = "lis $6";// + nWhile.toString;
+		val goToStart2 = ".word sw" + nWhile.toString;
+		val goToStart3 = "jr $6"
+		MIPSOutput.append(goToStart1);
+		MIPSOutput.append(goToStart2);
+		MIPSOutput.append(goToStart3);
+		MIPSOutput.append("ew" + nWhile.toString + ":");
 	}
 	def generateCode(proceduresTree: Node) : Unit = {
 		val children = proceduresTree.children;
@@ -263,7 +315,7 @@ object WLP4Gen {
 		val stmts = mainTree.children(9);
 		val dcls = mainTree.children(8);
 		generateCodeForDCLs(dcls);
-		generateCodeForStatements(stmts);
+		generateCodeForStatements(stmts, 1);
 		generateCodeForExpr(expr);
 		//val id = expr.children(0).children(0);
 		//val lex = id.lex;
