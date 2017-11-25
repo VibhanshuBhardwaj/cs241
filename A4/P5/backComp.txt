@@ -1,0 +1,8 @@
+start: .word start ;0
+
+i1: .word i2 ; 8
+
+i2: .word i1 ;4
+
+anotherLabel: jr $2
+i0: i3: i4: .word i4 ;should print 12

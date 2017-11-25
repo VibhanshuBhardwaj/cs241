@@ -1,0 +1,3 @@
+start: jr $1
+
+jalr 0xff

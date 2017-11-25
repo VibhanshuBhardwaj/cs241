@@ -1,0 +1,1 @@
+start: .word 10 fail:

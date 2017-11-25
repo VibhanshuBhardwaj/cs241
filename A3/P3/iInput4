@@ -1,0 +1,7 @@
+start: .word 1
+
+i1: .word 2
+
+i2: .word 3
+
+i2: i3: i4: .word 4 ;should print 8

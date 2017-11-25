@@ -1,0 +1,5 @@
+emptyLabel1: 
+
+start: .word 1
+start2: jr $31
+end: ;blah
