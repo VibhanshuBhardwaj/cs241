@@ -14,7 +14,7 @@ object GenCodeForExpr {
 
 		else if (expr.rule == "expr expr PLUS term") {
 			MIPSOutput.append("; expr -> expr PLUS term");
-			generateCodeForExpr(children(0));
+			generate(children(0));
 
 			var push3Inst = "sw $3, -4($30)"
 			var extendStackInst = "sub $30, $30, $4"
@@ -36,7 +36,7 @@ object GenCodeForExpr {
 
 		else if (expr.rule == "expr expr MINUS term") {
 			MIPSOutput.append("; expr -> expr MINUS term")
-			generateCodeForExpr(children(0));
+			generate(children(0));
 
 			var push3Inst = "sw $3, -4($30)"
 			var extendStackInst = "sub $30, $30, $4"

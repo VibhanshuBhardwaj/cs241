@@ -12,7 +12,10 @@ import ParseTreeBuilder._;
 
 import GenCodeForExpr._;
 import GenCodeForTerm._;
-
+import GenCodeForFactor._;
+import GenCodeForTest._;
+import GenCodeForLvalue._;
+import Utils._;
 
 object WLP4Gen {
 	var numberOfWhiles = 1;
@@ -24,53 +27,11 @@ object WLP4Gen {
 	type FunctionSymTable = (String, Map[String, String], Int);
 
 	def generateCodeForTerm(term: Node) : Unit = {
+		GenCodeForTerm.generate(term);
+	}
 
-	}
-	def getValOfLexFromSymTable(lex: String) : String = {
-		for (f <- FINALSYMTABLE) {
-			if (f._1 == "wain") {
-				return f._2(lex);
-			}
-		}
-		println(";SHOULD NOT BE HAPPENING YET");
-		return "";
-	}
 	def generateCodeForFactor(factor: Node) : Unit = {
-		val children = factor.children;
-		val rule = factor.rule
-		if (rule == "factor LPAREN expr RPAREN") {
-			//println("for expr called with " +children(1).value)
-			GenCodeForExpr.generate(children(1));
-		}
-		else if (rule == "factor NUM") {
-			val num = children(0);
-			val lex = num.lex;
-			val loadWordTo3 = "lis $3";
-			var constToBeLoaded = ".word " + lex;
-			MIPSOutput.append(loadWordTo3);
-			MIPSOutput.append(constToBeLoaded);
-		}
-		else if (rule =="factor STAR factor") {
-			MIPSOutput.append("; pointers! factor -> STAR factor")
-			generateCodeForFactor(children(1));
-			val takeAddress = "lw $3, 0($3)";
-			MIPSOutput.append(takeAddress);
-		}
-		else if (rule == "factor AMP lvalue") {
-			generateCodeForLvalue(children(1))
-		}
-		else if (rule == "factor ID") {
-			val id = children(0);
-			val lex = id.lex;
-		
-			var offset = getValOfLexFromSymTable(lex).split(" ")(1);
-			var inst ="";
-			if (offset == "0") inst+= "lw $3, "
-			else inst+= "lw $3, -"
-			inst+= offset.toString;
-			inst+="($29)"
-			MIPSOutput.append(inst);
-		}
+		GenCodeForFactor.generate(factor);
 	}
 	def generateCodeForStatements(stmts: Node, nWhile: Int) : Int = {
 		val children = stmts.children;
@@ -127,66 +88,7 @@ object WLP4Gen {
 		}
 	}
 	def generateCodeForTest(test: Node) : Unit = {
-		val children = test.children;
-		val exp1 = children(0);
-		val exp2 = children(2);
-		GenCodeForExpr.generate(exp1);
-		var push3Inst = "sw $3, -4($30)"
-		var extendStackInst = "sub $30, $30, $4"
-
-		MIPSOutput.append(push3Inst);
-		MIPSOutput.append(extendStackInst);
-		GenCodeForExpr.generate(exp2);
-		var reduceStackInst = "add $30, $30, $4";
-		var pop5Inst = "lw $5, -4($30)";
-		MIPSOutput.append(reduceStackInst);
-		MIPSOutput.append(pop5Inst)
-		
-		if (children(1).value == "LT") {
-			MIPSOutput.append("; LT code")
-			val sltInst = "slt $3, $5, $3";
-			MIPSOutput.append(sltInst);
-		}
-		else if (children(1).value == "GT") {
-			MIPSOutput.append("; GT code")
-			val sltInst = "slt $3, $3, $5";
-			MIPSOutput.append(sltInst);
-		}
-		else if (children(1).value == "GE") {
-			MIPSOutput.append("; GE code. inverting LT code")
-			val sltInst = "slt $3, $5, $3";
-			val not3 = "sub $3, $11, $3";
-			MIPSOutput.append(sltInst);
-			MIPSOutput.append(not3);
-		}
-		else if (children(1).value == "LE") {
-			MIPSOutput.append("; LE code. inverting GT code")
-			val sltInst = "slt $3, $3, $5";
-			val not3 = "sub $3, $11, $3";
-			MIPSOutput.append(sltInst);
-			MIPSOutput.append(not3);
-		}
-		else if (children(1).value == "NE") {
-			MIPSOutput.append("; NE code");
-			val sltInst1 = "slt $6, $3, $5";
-			val sltInst2 = "slt $7, $5, $3";
-			val add = "add $3, $6, $7";
-			MIPSOutput.append(sltInst1);
-			MIPSOutput.append(sltInst2);
-			MIPSOutput.append(add);
-		}
-		else if (children(1).value == "EQ") {
-			MIPSOutput.append("; EQ code. inverting NE");
-			val sltInst1 = "slt $6, $3, $5";
-			val sltInst2 = "slt $7, $5, $3";
-			val add = "add $3, $6, $7";
-			val not3 = "sub $3, $11, $3";
-			MIPSOutput.append(sltInst1);
-			MIPSOutput.append(sltInst2);
-			MIPSOutput.append(add);
-			MIPSOutput.append(not3);
-
-		}
+		GenCodeForTerm.generate(test);
 	}
 	def getLexFactor(factor: Node) : String = {
 		if (factor.rule == "factor ID") {
@@ -284,35 +186,8 @@ object WLP4Gen {
 		else return nWhile;
 	}
 	def generateCodeForLvalue(lvalue: Node) : Unit = {
-		//should only be called from inside generateCodeForFactor or recursively
-		//ie. factor -> AMP lvalue;
-		val children = lvalue.children;
-		val rule = lvalue.rule;
-		if (rule == "lvalue ID") {
-			val lex = children(0).lex;
-			val offset = getValOfLexFromSymTable(lex).split(" ")(1);
-			val lis3 = "lis $3"
-			var dotWordOffset = ".word "
 
-			if (offset == "0") dotWordOffset+= offset;
-			else {
-				dotWordOffset+= "-"
-				dotWordOffset+=offset
-			}
-			
-
-			MIPSOutput.append(lis3);
-			MIPSOutput.append(dotWordOffset);
-			val storeAddress = "add $3, $3, $29";
-			MIPSOutput.append(storeAddress);
-			
-		}
-		else if (rule == "lvalue STAR factor") {
-			generateCodeForFactor(children(1));
-		}
-		else if (rule == "lvalue LPAREN lvalue RPAREN") {
-			generateCodeForLvalue(children(1));
-		}
+		GenCodeForLvalue.generate(lvalue);
 	}
 	def generateCodeForIF(stmt: Node, nLabels: Int) : Int = {
 		MIPSOutput.append("; generating for if")
@@ -395,6 +270,7 @@ object WLP4Gen {
 		symTable = SymbolTableBuilder.buildSymbolTable(ParseTree, symTable, "");
 		val procedures = ParseTree.children(1);
 		FINALSYMTABLE = symTable;
+		Utils.init(FINALSYMTABLE)
 		//SymbolTableBuilder.debugPrintSymTable(FINALSYMTABLE)
 		//generateCodeForStatements()
 		generateCode(procedures);
