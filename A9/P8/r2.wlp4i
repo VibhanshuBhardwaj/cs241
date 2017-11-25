@@ -17,26 +17,83 @@ ID b
 RPAREN )
 LBRACE {
 dcls dcls dcl BECOMES NUM SEMI
-dcls dcls dcl BECOMES NUM SEMI
 dcls
 dcl type ID
 type INT
 INT int
 ID x
 BECOMES =
-NUM 1
-SEMI ;
-dcl type ID
-type INT
-INT int
-ID y
-BECOMES =
-NUM 1
+NUM 0
 SEMI ;
 statements statements statement
 statements
 statement WHILE LPAREN test RPAREN LBRACE statements RBRACE
 WHILE while
+LPAREN (
+test expr LE expr
+expr term
+term factor
+factor ID
+ID x
+LE <=
+expr term
+term factor
+factor NUM
+NUM 10
+RPAREN )
+LBRACE {
+statements statements statement
+statements statements statement
+statements statements statement
+statements
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
+expr term
+term factor
+factor ID
+ID x
+RPAREN )
+SEMI ;
+statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
+IF if
+LPAREN (
+test expr LT expr
+expr term
+term factor
+factor LPAREN expr RPAREN
+LPAREN (
+expr expr PLUS term
+expr term
+term factor
+factor NUM
+NUM 2
+PLUS +
+term factor
+factor NUM
+NUM 1
+RPAREN )
+LT <
+expr term
+term factor
+factor NUM
+NUM 4
+RPAREN )
+LBRACE {
+statements statements statement
+statements statements statement
+statements
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
+expr term
+term factor
+factor NUM
+NUM 99
+RPAREN )
+SEMI ;
+statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
+IF if
 LPAREN (
 test expr LT expr
 expr term
@@ -51,35 +108,6 @@ NUM 5
 RPAREN )
 LBRACE {
 statements statements statement
-statements statements statement
-statements statements statement
-statements
-statement lvalue BECOMES expr SEMI
-lvalue ID
-ID y
-BECOMES =
-expr term
-term factor
-factor NUM
-NUM 1
-SEMI ;
-statement WHILE LPAREN test RPAREN LBRACE statements RBRACE
-WHILE while
-LPAREN (
-test expr LT expr
-expr term
-term factor
-factor ID
-ID y
-LT <
-expr term
-term factor
-factor NUM
-NUM 3
-RPAREN )
-LBRACE {
-statements statements statement
-statements statements statement
 statements
 statement PRINTLN LPAREN expr RPAREN SEMI
 PRINTLN println
@@ -87,27 +115,49 @@ LPAREN (
 expr term
 term factor
 factor ID
-ID y
+ID x
 RPAREN )
 SEMI ;
-statement lvalue BECOMES expr SEMI
-lvalue ID
-ID y
-BECOMES =
-expr expr PLUS term
+RBRACE }
+ELSE else
+LBRACE {
+statements statements statement
+statements
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
 expr term
 term factor
-factor ID
-ID y
-PLUS +
-term factor
 factor NUM
-NUM 1
+NUM 666
+RPAREN )
 SEMI ;
+RBRACE }
+RBRACE }
+ELSE else
+LBRACE {
+statements
 RBRACE }
 statement lvalue BECOMES expr SEMI
 lvalue ID
 ID x
 BECOMES =
 expr expr PLUS term
-e
+expr term
+term factor
+factor ID
+ID x
+PLUS +
+term factor
+factor NUM
+NUM 1
+SEMI ;
+RBRACE }
+RETURN return
+expr term
+term factor
+factor ID
+ID x
+SEMI ;
+RBRACE }
+EOF EOF
