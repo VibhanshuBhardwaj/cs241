@@ -186,7 +186,7 @@ object WLP4Gen {
 		else if (stmt.rule.contains("DELETE")) {
 			MIPSOutput.append("; generating statement -> DELETE");
 			GenCodeForExpr.generate(children(3));
-			//MIPSOutput.append("beq $3, $11, skipDeleteBitch")
+			MIPSOutput.append("beq $3, $11, skipDeleteBitch" + nWhile)
 			//MIPSOutput.append("; gen code for new expr")
 			val store1 = "sw $1, -4($30)";
 			val extendStackInst = "sub $30, $30, $4";
@@ -204,8 +204,8 @@ object WLP4Gen {
 			var pop5Inst = "lw $1, -4($30)";
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append(pop5Inst);
-			//MIPSOutput.append("skipDeleteBitch: ")
-			return nWhile;
+			MIPSOutput.append("skipDeleteBitch" + nWhile+ ":")
+			return nWhile + 1;
 		}
 		else return nWhile;
 	}

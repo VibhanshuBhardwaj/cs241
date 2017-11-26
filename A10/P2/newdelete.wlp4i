@@ -6,9 +6,8 @@ INT int
 WAIN wain
 LPAREN (
 dcl type ID
-type INT STAR
+type INT
 INT int
-STAR *
 ID a
 COMMA ,
 dcl type ID
@@ -18,29 +17,12 @@ ID b
 RPAREN )
 LBRACE {
 dcls dcls dcl BECOMES NULL SEMI
-dcls dcls dcl BECOMES NULL SEMI
-dcls dcls dcl BECOMES NUM SEMI
 dcls
-dcl type ID
-type INT
-INT int
-ID x
-BECOMES =
-NUM 5
-SEMI ;
 dcl type ID
 type INT STAR
 INT int
 STAR *
 ID p
-BECOMES =
-NULL NULL
-SEMI ;
-dcl type ID
-type INT STAR
-INT int
-STAR *
-ID t
 BECOMES =
 NULL NULL
 SEMI ;
@@ -50,23 +32,18 @@ statements statements statement
 statements statements statement
 statements statements statement
 statements
-statement lvalue BECOMES expr SEMI
-lvalue ID
-ID p
-BECOMES =
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
 expr term
 term factor
-factor AMP lvalue
-AMP &
-lvalue LPAREN lvalue RPAREN
-LPAREN (
-lvalue ID
-ID x
+factor NUM
+NUM 5
 RPAREN )
 SEMI ;
 statement lvalue BECOMES expr SEMI
 lvalue ID
-ID t
+ID p
 BECOMES =
 expr term
 term factor
@@ -77,8 +54,17 @@ LBRACK [
 expr term
 term factor
 factor NUM
-NUM 2
+NUM 8192
 RBRACK ]
+SEMI ;
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
+expr term
+term factor
+factor NUM
+NUM 10
+RPAREN )
 SEMI ;
 statement DELETE LBRACK RBRACK expr SEMI
 DELETE delete
@@ -87,59 +73,27 @@ RBRACK ]
 expr term
 term factor
 factor ID
-ID t
-SEMI ;
-statement lvalue BECOMES expr SEMI
-lvalue ID
-ID t
-BECOMES =
-expr term
-term factor
-factor AMP lvalue
-AMP &
-lvalue LPAREN lvalue RPAREN
-LPAREN (
-lvalue STAR factor
-STAR *
-factor LPAREN expr RPAREN
-LPAREN (
-expr term
-term factor
-factor AMP lvalue
-AMP &
-lvalue LPAREN lvalue RPAREN
-LPAREN (
-lvalue STAR factor
-STAR *
-factor ID
 ID p
-RPAREN )
-RPAREN )
-RPAREN )
 SEMI ;
 statement PRINTLN LPAREN expr RPAREN SEMI
 PRINTLN println
 LPAREN (
 expr term
 term factor
-factor STAR factor
-STAR *
-factor ID
-ID t
+factor NUM
+NUM 69
 RPAREN )
 SEMI ;
 RETURN return
 expr expr PLUS term
 expr term
 term factor
-factor STAR factor
-STAR *
 factor ID
-ID p
+ID a
 PLUS +
 term factor
-factor NUM
-NUM 1
+factor ID
+ID b
 SEMI ;
 RBRACE }
 EOF EOF

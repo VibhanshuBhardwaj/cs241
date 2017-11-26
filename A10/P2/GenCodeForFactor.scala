@@ -61,6 +61,11 @@ object GenCodeForFactor {
 			MIPSOutput.append(lis10);
 			MIPSOutput.append(newWord);
 			MIPSOutput.append(call);
+			val r = scala.util.Random;
+			val randInt = r.nextInt(1000);
+			MIPSOutput.append("bne $3, $0, newSuccess" + randInt.toString);
+			MIPSOutput.append("add $3, $11, $0");
+			MIPSOutput.append("newSuccess" + randInt.toString + ":")
 			var reduceStackInst = "add $30, $30, $4";
 			var pop5Inst = "lw $1, -4($30)";
 			MIPSOutput.append(reduceStackInst);
