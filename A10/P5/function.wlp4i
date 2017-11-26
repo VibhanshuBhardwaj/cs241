@@ -1,0 +1,149 @@
+start BOF procedures EOF
+BOF BOF
+procedures procedure procedures
+procedure INT ID LPAREN params RPAREN LBRACE dcls statements RETURN expr SEMI RBRACE
+INT int
+ID print5
+LPAREN (
+params
+RPAREN )
+LBRACE {
+dcls
+statements statements statement
+statements
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
+expr term
+term factor
+factor NUM
+NUM 5
+RPAREN )
+SEMI ;
+RETURN return
+expr term
+term factor
+factor NUM
+NUM 5
+SEMI ;
+RBRACE }
+procedures procedure procedures
+procedure INT ID LPAREN params RPAREN LBRACE dcls statements RETURN expr SEMI RBRACE
+INT int
+ID print65
+LPAREN (
+params
+RPAREN )
+LBRACE {
+dcls dcls dcl BECOMES NUM SEMI
+dcls
+dcl type ID
+type INT
+INT int
+ID n
+BECOMES =
+NUM 0
+SEMI ;
+statements statements statement
+statements statements statement
+statements
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
+expr term
+term factor
+factor NUM
+NUM 6
+RPAREN )
+SEMI ;
+statement lvalue BECOMES expr SEMI
+lvalue ID
+ID n
+BECOMES =
+expr term
+term factor
+factor ID LPAREN RPAREN
+ID print5
+LPAREN (
+RPAREN )
+SEMI ;
+RETURN return
+expr term
+term factor
+factor NUM
+NUM 6
+SEMI ;
+RBRACE }
+procedures procedure procedures
+procedure INT ID LPAREN params RPAREN LBRACE dcls statements RETURN expr SEMI RBRACE
+INT int
+ID garb
+LPAREN (
+params
+RPAREN )
+LBRACE {
+dcls
+statements statements statement
+statements
+statement PRINTLN LPAREN expr RPAREN SEMI
+PRINTLN println
+LPAREN (
+expr term
+term factor
+factor NUM
+NUM 666
+RPAREN )
+SEMI ;
+RETURN return
+expr term
+term factor
+factor NUM
+NUM 69
+SEMI ;
+RBRACE }
+procedures main
+main INT WAIN LPAREN dcl COMMA dcl RPAREN LBRACE dcls statements RETURN expr SEMI RBRACE
+INT int
+WAIN wain
+LPAREN (
+dcl type ID
+type INT
+INT int
+ID a
+COMMA ,
+dcl type ID
+type INT
+INT int
+ID b
+RPAREN )
+LBRACE {
+dcls dcls dcl BECOMES NUM SEMI
+dcls
+dcl type ID
+type INT
+INT int
+ID p
+BECOMES =
+NUM 0
+SEMI ;
+statements statements statement
+statements
+statement lvalue BECOMES expr SEMI
+lvalue ID
+ID p
+BECOMES =
+expr term
+term factor
+factor ID LPAREN RPAREN
+ID print65
+LPAREN (
+RPAREN )
+SEMI ;
+RETURN return
+expr term
+term factor
+factor NUM
+NUM 7
+SEMI ;
+RBRACE }
+EOF EOF
