@@ -145,18 +145,28 @@ object WLP4Gen {
 		if (stmt.rule.contains("PRINTLN")) {
 			//println("print called")
 			GenCodeForExpr.generate(children(2), name);
-			//val push1Inst = "sw $1, -4($30)";
-			//val reduceStackInst = "sub $30, $30, $4";
+			val push1Inst = "sw $1, -4($30)";
+			val extendStackInst = "sub $30, $30, $4";
+			MIPSOutput.append(push1Inst);
+			MIPSOutput.append(extendStackInst);
+			MIPSOutput.append("sw $31, -4($30)")
+			MIPSOutput.append(extendStackInst);
+
 			val copyTo1 = "add $1, $3, $0";
+			MIPSOutput.append(copyTo1);
 			val lis10 = "lis $10";
 			val printWord = ".word print"
 			val callPrint = "jalr $10"
-			val restore1 = "lw $1, 0($29)"
-			MIPSOutput.append(copyTo1);
 			MIPSOutput.append(lis10);
 			MIPSOutput.append(printWord);
 			MIPSOutput.append(callPrint);
-			MIPSOutput.append(restore1);
+
+			var reduceStackInst = "add $30, $30, $4";
+			MIPSOutput.append(reduceStackInst);
+			MIPSOutput.append("lw $31, -4($30)");
+			MIPSOutput.append(reduceStackInst);
+			MIPSOutput.append("lw $1, -4($30)")
+			
 			return nWhile;
 		}
 		else if (stmt.rule == "statement lvalue BECOMES expr SEMI") {
@@ -173,7 +183,9 @@ object WLP4Gen {
 			var inst ="";
 			if (!lvalue.rule.contains("STAR")) {
 				val lex = getLexLvalue(children(0));
+				//println("lex is "  + lex)
 				val offset = getValOfLexFromSymTable(lex, name).split(" ")(1);
+				//println("offset is " + offset)
 				if (offset == "0") inst+= "sw $3, "
 				else inst+= "sw $3, -"
 				inst+= offset.toString;
@@ -219,6 +231,10 @@ object WLP4Gen {
 			MIPSOutput.append(store1);
 			MIPSOutput.append(extendStackInst);
 			MIPSOutput.append(set1);
+
+			MIPSOutput.append("sw $31, -4($30)")
+			MIPSOutput.append(extendStackInst);
+
 			val lis10 = "lis $10";
 			val newWord = ".word delete"
 			val call = "jalr $10"
@@ -227,6 +243,8 @@ object WLP4Gen {
 			MIPSOutput.append(call);
 			var reduceStackInst = "add $30, $30, $4";
 			var pop5Inst = "lw $1, -4($30)";
+			MIPSOutput.append(reduceStackInst);
+			MIPSOutput.append("lw $31, -4($30)")
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append(pop5Inst);
 			MIPSOutput.append("skipDeleteBitch" + nWhile+ ":")
@@ -302,23 +320,30 @@ object WLP4Gen {
 		val initWord = ".word init"
 		MIPSOutput.append(lis10);
 		MIPSOutput.append(initWord);
-
+		val extendStackInst = "sub $30, $30, $4";
 		if (firstParamType == "int") {
 			val store2 = "sw $2, -4($30)";
-			val extendStackInst = "sub $30, $30, $4";
+			
 			val make2Zero = "add $2, $0, $0";
 			MIPSOutput.append(store2);
 			MIPSOutput.append(extendStackInst);
 			MIPSOutput.append(make2Zero)
 		}
+
+		MIPSOutput.append("sw $31, -4($30)")
+		MIPSOutput.append(extendStackInst)
 		val callInit = "jalr $10"
 		MIPSOutput.append(callInit);
+		var reduceStackInst = "add $30, $30, $4";
+		MIPSOutput.append(reduceStackInst);
+		MIPSOutput.append("lw $31, -4($30)")
 		if (firstParamType == "int") {
-			var reduceStackInst = "add $30, $30, $4";
+			
 			var pop2Inst = "lw $2, -4($30)";
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append(pop2Inst);
 		}
+
 		val expr = currProcedure.children(11);
 		val stmts = currProcedure.children(9);
 		val dcls = currProcedure.children(8);

@@ -21,7 +21,8 @@ object MIPSOutput {
 		output+= "beq $0, $0, Fwain"
 	}
 	def addProlog(sizeSymTable: Int, name: String) {
-		val actualSize = 4 + sizeSymTable ;
+		var actualSize = sizeSymTable ;
+		//if (name != "wain") actualSize = actualSize - 4;
 		println(";adding prolog for " + name);
 		output+= "; adding prolog for " + name;
 		if(name == "wain") {
@@ -33,15 +34,20 @@ object MIPSOutput {
 		if (name == "wain") { 
 			output+= "sw $1, 0($29)"
 			output+= "sw $2, -4($29)"
+		//	output+= "sw $31, -" + sizeSymTable.toString+ "($29)"
 		}
-		output+= "sw $31, -" + sizeSymTable.toString+ "($29)"
+		
 		output+= "; prolog ends here for " + name;
 
 	}
 	def addEpilog(sizeSymTable: Int, name: String) {
 		output+="; epilog begins here for " + name;
-		output+="lw $31, -"+ sizeSymTable.toString+ "($29)";
+		
 		output+="add $30, $29, $4"
+		if (name == "wain") {
+		//	output+="lw $31, -"+ sizeSymTable.toString+ "($29)";
+			
+		}
 		output+="jr $31"
 	}
 	def printOutput() {

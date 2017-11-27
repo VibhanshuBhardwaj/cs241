@@ -1,0 +1,22 @@
+int f(int a) { return a+4; }
+int g(int a) { return a+9; }
+
+int bar() {
+  int * arr = NULL;
+  arr = new int[5];
+  println(69);
+  *(arr+3)=2;
+  delete[] arr;
+  println(100);
+  return 10;
+}
+
+int foo(int a, int * b, int c, int d, int * e) {
+  int p = 5;
+   println(5);
+  p = bar();
+  println(269);
+  *(b+bar()) = bar();
+  println(6);
+  return a + *(b+10) + c + d + *e;
+}

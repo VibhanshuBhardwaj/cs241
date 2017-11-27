@@ -76,6 +76,9 @@ object GenCodeForFactor {
 			val set1 = "add $1, $0, $3";
 			MIPSOutput.append(store1);
 			MIPSOutput.append(extendStackInst);
+			MIPSOutput.append("sw $31, -4($30)");
+			MIPSOutput.append(extendStackInst);
+
 			MIPSOutput.append(set1);
 			val lis10 = "lis $10";
 			val newWord = ".word new"
@@ -83,12 +86,17 @@ object GenCodeForFactor {
 			MIPSOutput.append(lis10);
 			MIPSOutput.append(newWord);
 			MIPSOutput.append(call);
+
+			var reduceStackInst = "add $30, $30, $4";
+
+			MIPSOutput.append(reduceStackInst);
+			MIPSOutput.append("lw $31, -4($30)")
 			val r = scala.util.Random;
 			val randInt = r.nextInt(1000);
 			MIPSOutput.append("bne $3, $0, newSuccess" + randInt.toString);
 			MIPSOutput.append("add $3, $11, $0");
 			MIPSOutput.append("newSuccess" + randInt.toString + ":")
-			var reduceStackInst = "add $30, $30, $4";
+			
 			var pop5Inst = "lw $1, -4($30)";
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append(pop5Inst);
@@ -107,13 +115,20 @@ object GenCodeForFactor {
 			
 			//MIPSOutput.append(push31);
 			//MIPSOutput.append(extendStackInst);
-
+			MIPSOutput.append("sw $31, -4($30)");
+			MIPSOutput.append(extendStackInst);
 			MIPSOutput.append("lis $10");
 			MIPSOutput.append(".word " + "F" + children(0).lex)
+			MIPSOutput.append("sub $29, $30, $4");
 			MIPSOutput.append("jalr $10")
+
 			var reduceStackInst = "add $30, $30, $4";
 			MIPSOutput.append(reduceStackInst);
+			MIPSOutput.append("lw $31, -4($30)")
+
+			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append("lw $5, -4($30)");
+
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append("lw $3, -4($30)");
 
@@ -122,6 +137,7 @@ object GenCodeForFactor {
 			var pop29 = "lw $29, -4($30)";
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append(pop29);
+
 		}
 		else if (rule == "factor ID LPAREN arglist RPAREN") {
 			var push29Inst = "sw $29, -4($30)"
@@ -134,15 +150,24 @@ object GenCodeForFactor {
 			MIPSOutput.append("add $21, $30, $0")
 			processArglist(children(2), funcName);
 			MIPSOutput.append("sub $29, $21, $4"); // HERE
+			MIPSOutput.append("sw $31, -4($30)");
+			MIPSOutput.append(extendStackInst);
 			MIPSOutput.append("lis $10");
 			MIPSOutput.append(".word " + "F" + children(0).lex)
 			MIPSOutput.append("jalr $10")
+			MIPSOutput.append("lis $19")
+			MIPSOutput.append(".word 8")
 			var reduceStackInst = "add $30, $30, $4";
+			MIPSOutput.append(reduceStackInst);
+			MIPSOutput.append("lw $31, -4($30)")
+			MIPSOutput.append("lis $19")
+			MIPSOutput.append(".word 9")
 
 			var pop29 = "lw $29, -4($30)";
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append(pop29);			
-
+			MIPSOutput.append("lis $19")
+			MIPSOutput.append(".word 10")
 		}
 	}
 }
