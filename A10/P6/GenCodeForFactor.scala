@@ -108,10 +108,10 @@ object GenCodeForFactor {
 			MIPSOutput.append(push29Inst);
 			MIPSOutput.append(extendStackInst);
 
-			MIPSOutput.append("sw $3, -4($30)");
-			MIPSOutput.append(extendStackInst);
-			MIPSOutput.append("sw $5, -4($30)");
-			MIPSOutput.append(extendStackInst);
+		//	MIPSOutput.append("sw $3, -4($30)");
+		//	MIPSOutput.append(extendStackInst);
+		//	MIPSOutput.append("sw $5, -4($30)");
+		//	MIPSOutput.append(extendStackInst);
 			
 			//MIPSOutput.append(push31);
 			//MIPSOutput.append(extendStackInst);
@@ -126,11 +126,11 @@ object GenCodeForFactor {
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append("lw $31, -4($30)")
 
-			MIPSOutput.append(reduceStackInst);
-			MIPSOutput.append("lw $5, -4($30)");
+		//	MIPSOutput.append(reduceStackInst);
+		//	MIPSOutput.append("lw $5, -4($30)");
 
-			MIPSOutput.append(reduceStackInst);
-			MIPSOutput.append("lw $3, -4($30)");
+		//	MIPSOutput.append(reduceStackInst);
+		//	MIPSOutput.append("lw $3, -4($30)");
 
 			//MIPSOutput.append(reduceStackInst);
 			//MIPSOutput.append(pop31);
@@ -147,27 +147,29 @@ object GenCodeForFactor {
 			MIPSOutput.append(extendStackInst);
 			
 			MIPSOutput.append("; starting to process")
-			MIPSOutput.append("add $21, $30, $0")
-			processArglist(children(2), funcName);
-			MIPSOutput.append("sub $29, $21, $4"); // HERE
+			
+
+			MIPSOutput.append("; storing 31 on stack")
 			MIPSOutput.append("sw $31, -4($30)");
 			MIPSOutput.append(extendStackInst);
+			MIPSOutput.append("add $21, $30, $0")
+			
+			processArglist(children(2), funcName);
+			MIPSOutput.append("sub $29, $21, $4"); // HERE
+			MIPSOutput.append("add $30, $21, $0"); //REMOVE THIS MAYBE?
 			MIPSOutput.append("lis $10");
 			MIPSOutput.append(".word " + "F" + children(0).lex)
 			MIPSOutput.append("jalr $10")
-			MIPSOutput.append("lis $19")
-			MIPSOutput.append(".word 8")
+
 			var reduceStackInst = "add $30, $30, $4";
 			MIPSOutput.append(reduceStackInst);
-			MIPSOutput.append("lw $31, -4($30)")
-			MIPSOutput.append("lis $19")
-			MIPSOutput.append(".word 9")
+			MIPSOutput.append("lw $31, -4($30)");
+
 
 			var pop29 = "lw $29, -4($30)";
 			MIPSOutput.append(reduceStackInst);
-			MIPSOutput.append(pop29);			
-			MIPSOutput.append("lis $19")
-			MIPSOutput.append(".word 10")
+			MIPSOutput.append(pop29);
+
 		}
 	}
 }

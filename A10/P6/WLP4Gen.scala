@@ -361,7 +361,7 @@ object WLP4Gen {
 	def generateCodeForProcedure(procedure: Node) : Unit = {
 		val children = procedure.children;
 		val name = children(1).lex;
-		if (functionsUsed(name)) { //function is used somewhere
+		if (true) { //function is used somewhere
 			MIPSOutput.append("F" + name + ":")
 			var size = 0;
 			for (f<- FINALSYMTABLE) {
@@ -435,11 +435,11 @@ object WLP4Gen {
 		//populateFunctionsUsedInWain(ParseTree);
 		val procedures = ParseTree.children(1);
 
-		populateFunctionsUsedProcedures(procedures);
+		//populateFunctionsUsedProcedures(procedures);
 
-		for (f<- functionsUsed) {
-			println(";have used " + f);
-		}
+		//for (f<- functionsUsed) {
+		//	println(";have used " + f);
+		//Ffuncti}
 		signatureMap = SymbolTableBuilder.getSignatureMap();
 		TypeChecker.setup(signatureMap, signatureMap, FINALSYMTABLE)
 		MIPSOutput.init();
