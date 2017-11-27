@@ -27,6 +27,7 @@ object MIPSOutput {
 		output+= "; adding prolog for " + name;
 		if(name == "wain") {
 			output+= "sub $29, $30, $4"
+			output+= "add $28, $31, $0"
 		}
 		output+= "lis $12"
 		output+= s".word $actualSize"
@@ -45,6 +46,7 @@ object MIPSOutput {
 		
 		output+="add $30, $29, $4"
 		if (name == "wain") {
+			output+="add $31, $28, $0"
 		//	output+="lw $31, -"+ sizeSymTable.toString+ "($29)";
 			
 		}

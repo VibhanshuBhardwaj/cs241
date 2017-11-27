@@ -149,8 +149,8 @@ object WLP4Gen {
 			val extendStackInst = "sub $30, $30, $4";
 			MIPSOutput.append(push1Inst);
 			MIPSOutput.append(extendStackInst);
-			MIPSOutput.append("sw $31, -4($30)")
-			MIPSOutput.append(extendStackInst);
+			//MIPSOutput.append("sw $31, -4($30)")
+			//MIPSOutput.append(extendStackInst);
 
 			val copyTo1 = "add $1, $3, $0";
 			MIPSOutput.append(copyTo1);
@@ -162,8 +162,8 @@ object WLP4Gen {
 			MIPSOutput.append(callPrint);
 
 			var reduceStackInst = "add $30, $30, $4";
-			MIPSOutput.append(reduceStackInst);
-			MIPSOutput.append("lw $31, -4($30)");
+		//	MIPSOutput.append(reduceStackInst);
+		//	MIPSOutput.append("lw $31, -4($30)");
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append("lw $1, -4($30)")
 			
@@ -232,8 +232,8 @@ object WLP4Gen {
 			MIPSOutput.append(extendStackInst);
 			MIPSOutput.append(set1);
 
-			MIPSOutput.append("sw $31, -4($30)")
-			MIPSOutput.append(extendStackInst);
+			//MIPSOutput.append("sw $31, -4($30)")
+			//MIPSOutput.append(extendStackInst);
 
 			val lis10 = "lis $10";
 			val newWord = ".word delete"
@@ -243,8 +243,8 @@ object WLP4Gen {
 			MIPSOutput.append(call);
 			var reduceStackInst = "add $30, $30, $4";
 			var pop5Inst = "lw $1, -4($30)";
-			MIPSOutput.append(reduceStackInst);
-			MIPSOutput.append("lw $31, -4($30)")
+			//MIPSOutput.append(reduceStackInst);
+			//MIPSOutput.append("lw $31, -4($30)")
 			MIPSOutput.append(reduceStackInst);
 			MIPSOutput.append(pop5Inst);
 			MIPSOutput.append("skipDeleteBitch" + nWhile+ ":")
@@ -330,13 +330,13 @@ object WLP4Gen {
 			MIPSOutput.append(make2Zero)
 		}
 
-		MIPSOutput.append("sw $31, -4($30)")
-		MIPSOutput.append(extendStackInst)
+		//MIPSOutput.append("sw $31, -4($30)")
+		//MIPSOutput.append(extendStackInst)
 		val callInit = "jalr $10"
 		MIPSOutput.append(callInit);
 		var reduceStackInst = "add $30, $30, $4";
-		MIPSOutput.append(reduceStackInst);
-		MIPSOutput.append("lw $31, -4($30)")
+		//MIPSOutput.append(reduceStackInst);
+		//MIPSOutput.append("lw $31, -4($30)")
 		if (firstParamType == "int") {
 			
 			var pop2Inst = "lw $2, -4($30)";

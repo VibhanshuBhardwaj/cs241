@@ -76,8 +76,8 @@ object GenCodeForFactor {
 			val set1 = "add $1, $0, $3";
 			MIPSOutput.append(store1);
 			MIPSOutput.append(extendStackInst);
-			MIPSOutput.append("sw $31, -4($30)");
-			MIPSOutput.append(extendStackInst);
+			//MIPSOutput.append("sw $31, -4($30)");
+			//MIPSOutput.append(extendStackInst);
 
 			MIPSOutput.append(set1);
 			val lis10 = "lis $10";
@@ -89,8 +89,8 @@ object GenCodeForFactor {
 
 			var reduceStackInst = "add $30, $30, $4";
 
-			MIPSOutput.append(reduceStackInst);
-			MIPSOutput.append("lw $31, -4($30)")
+		//	MIPSOutput.append(reduceStackInst);
+		//	MIPSOutput.append("lw $31, -4($30)")
 			val r = scala.util.Random;
 			val randInt = r.nextInt(1000);
 			MIPSOutput.append("bne $3, $0, newSuccess" + randInt.toString);
