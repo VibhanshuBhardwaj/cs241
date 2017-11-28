@@ -128,7 +128,7 @@ object WLP4Gen {
 		}
 		else {
 			MIPSOutput.append("; SHOULD NOT BE HAPPENING :( ");
-			return " :( "
+			return " :( SURELY THEY DON:SS:ST HAVE THIS "
 
 		}
 	}
@@ -168,7 +168,7 @@ object WLP4Gen {
 			println("; lvalue rule" + lvalue.rule);
 			if (!lvalue.rule.contains("STAR")) {
 				val lex = getLexLvalue(children(0));
-				if (true) {
+				if ( (varsUsed(name) contains lex) || (doesExpHaveFuncCall(expr))) {
 					println("; generating code for "  + lex)
 					GenCodeForExpr.generate(expr, name);
 					
@@ -389,9 +389,10 @@ object WLP4Gen {
 
 	def populateUsedVarsInExpr(expr: Node, funcName: String) {
 		val children = expr.children;
-
-		if (expr.rule == "factor ID") {
+		//println("; rule " + expr.rule)
+		if (expr.rule == "factor ID" || expr.rule == "lvalue ID") {
 			var varlex = children(0).lex;
+		//	println("; varlex " + varlex)
 			varsUsed(funcName) += varlex;
 		}
 		else {
@@ -400,12 +401,31 @@ object WLP4Gen {
 			}
 		}
 	}
+	def doesExpHaveFuncCall(expr: Node) : Boolean = {
+		if (expr.rule.contains("factor ID LPAREN")) return true;
+		else if (expr.children.length > 0) {
+			for (c<- expr.children) {
+				val funcCall = doesExpHaveFuncCall(c)
+				if (funcCall) return true;
+			}
+			return false;
+		}
+		else return false;
+
+	}
+	def doesLvalueHaveStar(lval: Node) : Boolean = {
+		if (lval.rule == "lvalue ID") return false;
+		else if (lval.rule == "lvalue LPAREN lvalue RPAREN") return doesLvalueHaveStar(lval.children(1));
+		else if (lval.rule == "lvalue STAR factor") return true;
+		else return false;
+	}
 	def populateUsedVarsInStmts(stmts: Node, funcName: String) {
 		//println("populateUsedVarsInStmts "+ stmts.rule)
 		val children = stmts.children;
 		if (children.length == 2) {
 			val stmt = children(1);
 			val others = children(0);
+			populateUsedVarsInStmts(others, funcName)
 			if (stmt.rule.contains("PRINTLN")) {
 				//println("called with ")
 				val expr = stmt.children(2);
@@ -415,7 +435,41 @@ object WLP4Gen {
 				val expr = stmt.children(3)
 				populateUsedVarsInExpr(expr, funcName)
 			}
-			populateUsedVarsInStmts(others, funcName)
+			else if (stmt.rule.contains("IF")) {
+				val expr = stmt.children(2);
+				populateUsedVarsInExpr(expr, funcName);
+				val ifstmts = stmt.children(5);
+				val elsestmts = stmt.children(9);
+				//addAllVars(expr, funcName);
+				//addAllVars(ifstmts, fun)
+				println("; happening with if else before");
+				for (x<- varsUsed(funcName)) {
+					println(";inside" + x);
+				}
+				populateUsedVarsInExpr(elsestmts, funcName);
+				populateUsedVarsInExpr(ifstmts, funcName);
+				println("; happening with if else AFTER");
+				for (x<- varsUsed(funcName)) {
+					println(";outside" + x);
+				}
+				
+			}
+			else if (stmt.rule.contains("WHILE")) {
+				val expr = stmt.children(2);
+				populateUsedVarsInExpr(expr, funcName);
+				val inloopstmt = stmt.children(5);
+				populateUsedVarsInStmts(inloopstmt, funcName);
+			}
+			else if (stmt.rule.contains("BECOMES")) {
+				val lex = getLexLvalue(stmt.children(0));
+				val expr = stmt.children(2);
+				if ((varsUsed(funcName) contains lex) ||doesLvalueHaveStar(stmt.children(0))) {
+					println("; populating lvalue's children " + lex);
+					populateUsedVarsInExpr(expr, funcName);
+				}
+
+			}
+			
 		}
 	}
 	def findUsedVars(procedures: Node) {
