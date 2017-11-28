@@ -48,11 +48,11 @@ object WLP4Gen {
 
 	}
 
-	def generateCodeForStatements(stmts: Node, nWhile: Int, name: String) : Int = {
+	def generateCodeForStatements(stmts: Node, nWhile: Int, name: String, opt: Boolean) : Int = {
 		val children = stmts.children;
 		if (children.length == 2) {
-			var newNumberOfWhiles = generateCodeForStatements(children(0), nWhile, name);
-			var newNumberOfWhiles2 = generateCodeForONEStatement(children(1), newNumberOfWhiles, name);
+			var newNumberOfWhiles = generateCodeForStatements(children(0), nWhile, name, opt);
+			var newNumberOfWhiles2 = generateCodeForONEStatement(children(1), newNumberOfWhiles, name, opt);
 			return newNumberOfWhiles2;
 		}
 		else return nWhile;
@@ -132,7 +132,7 @@ object WLP4Gen {
 
 		}
 	}
-	def generateCodeForONEStatement(stmt: Node, nWhile: Int, name: String) : Int = {
+	def generateCodeForONEStatement(stmt: Node, nWhile: Int, name: String, opt: Boolean) : Int = {
 		val children = stmt.children;
 		if (stmt.rule.contains("PRINTLN")) {
 
@@ -154,21 +154,16 @@ object WLP4Gen {
 			return nWhile;
 		}
 		else if (stmt.rule == "statement lvalue BECOMES expr SEMI") {
-			//
 			
 			val expr = children(2);
 			val lvalue = children(0);
 			
-			
-			
-			//
-			//val typeOfLex =  TypeChecker.checkTypes(children(0), FINALSYMTABLE, "wain");
-			//println("typeOfLex : " +typeOfLex)
+
 			var inst ="";
 			println("; lvalue rule" + lvalue.rule);
 			if (!lvalue.rule.contains("STAR")) {
 				val lex = getLexLvalue(children(0));
-				if ( (varsUsed(name) contains lex) || (doesExpHaveFuncCall(expr))) {
+				if (  !opt || (varsUsed(name) contains lex) || (doesExpHaveFuncCall(expr))) {
 					println("; generating code for "  + lex)
 					GenCodeForExpr.generate(expr, name);
 					
@@ -201,11 +196,11 @@ object WLP4Gen {
 			return nWhile;
 		}
 		else if (stmt.rule.contains("WHILE")) {
-			var newNumberOfWhiles = generateCodeForWhile(stmt, nWhile, name);
+			var newNumberOfWhiles = generateCodeForWhile(stmt, nWhile, name, opt);
 			return newNumberOfWhiles;
 		}
 		else if (stmt.rule.contains("IF")) {
-			var newNumberOfLabels = generateCodeForIF(stmt, nWhile, name);
+			var newNumberOfLabels = generateCodeForIF(stmt, nWhile, name, opt);
 			return newNumberOfLabels;
 		}
 		else if (stmt.rule.contains("DELETE")) {
@@ -235,7 +230,7 @@ object WLP4Gen {
 
 		GenCodeForLvalue.generate(lvalue, funcName);
 	}
-	def generateCodeForIF(stmt: Node, nLabels: Int, funcName: String) : Int = {
+	def generateCodeForIF(stmt: Node, nLabels: Int, funcName: String, opt: Boolean) : Int = {
 		MIPSOutput.append("; generating for if")
 		val children = stmt.children;
 		generateCodeForTest(children(2), funcName);
@@ -243,16 +238,16 @@ object WLP4Gen {
 		val endLabel = "eIF" + nLabels;
 		val branchToTrue = "bne $3, $0, " + startLabel;
 		MIPSOutput.append(branchToTrue)
-		var newNumberOfLabels = generateCodeForStatements(children(9), nLabels + 1, funcName);
+		var newNumberOfLabels = generateCodeForStatements(children(9), nLabels + 1, funcName, opt);
 		val branchToEND = "beq $0, $0, " + endLabel;
 		MIPSOutput.append(branchToEND);
 		MIPSOutput.append(startLabel+":")
-		newNumberOfLabels+= generateCodeForStatements(children(5), newNumberOfLabels + 1, funcName);
+		newNumberOfLabels+= generateCodeForStatements(children(5), newNumberOfLabels + 1, funcName, opt);
 		MIPSOutput.append(endLabel+":")
 		return newNumberOfLabels;
 
 	}
-	def generateCodeForWhile(stmt: Node, nWhile: Int, funcName: String) : Int = {
+	def generateCodeForWhile(stmt: Node, nWhile: Int, funcName: String, opt: Boolean) : Int = {
 		//println("generateCodeForWhile with " + nWhile.toString)
 		MIPSOutput.append("; generating code for while ")
 		val children = stmt.children;
@@ -269,7 +264,7 @@ object WLP4Gen {
 		MIPSOutput.append(t1);
 		MIPSOutput.append(t2);
 		MIPSOutput.append(t3);
-		var newNumberOfWhiles = generateCodeForStatements(children(5), nWhile + 1, funcName);
+		var newNumberOfWhiles = generateCodeForStatements(children(5), nWhile + 1, funcName, opt);
 		val goToStart1 = "lis $6";// + nWhile.toString;
 		val goToStart2 = ".word sw" + nWhile.toString;
 		val goToStart3 = "jr $6"
@@ -318,7 +313,7 @@ object WLP4Gen {
 		val dcls = currProcedure.children(8);
 
 		generateCodeForDCLs(dcls, "wain");
-		numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, "wain");
+		numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, "wain", false);
 		GenCodeForExpr.generate(expr, "wain");
 		
 		MIPSOutput.addEpilog(size*4, "wain");
@@ -342,7 +337,7 @@ object WLP4Gen {
 			val dcls = children(6);
 
 			generateCodeForDCLs(dcls, name);
-			numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, name);
+			numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, name, true);
 			GenCodeForExpr.generate(expr, name);
 			MIPSOutput.addEpilog(size*4, name)
 		}
@@ -390,7 +385,7 @@ object WLP4Gen {
 	def populateUsedVarsInExpr(expr: Node, funcName: String) {
 		val children = expr.children;
 		//println("; rule " + expr.rule)
-		if (expr.rule == "factor ID" || expr.rule == "lvalue ID") {
+		if (expr.rule == "factor ID") {
 			var varlex = children(0).lex;
 		//	println("; varlex " + varlex)
 			varsUsed(funcName) += varlex;
