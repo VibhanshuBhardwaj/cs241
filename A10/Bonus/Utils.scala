@@ -36,4 +36,70 @@ object Utils {
 	def init(table: ArrayBuffer[FunctionSymTable]) {
 		FINALSYMTABLE =table;
 	}
+
+	def isConstantExpr(expr: Node) : Boolean = {
+		val children = expr.children;
+		if (expr.rule == "expr term") {
+			val term = children(0);
+			return isConstantTerm(term);
+		}
+		if ((expr.rule == "expr expr PLUS term") || (expr.rule == "expr expr MINUS term")) {
+			return (isConstantExpr(children(0)) && isConstantTerm(children(2)))
+		}
+		else return false;
+	}
+	def isConstantFactor(fct: Node) : Boolean = {
+		if (fct.rule == "factor NUM") {
+			return true;
+		}
+		else if (fct.rule == "factor LPAREN expr RPAREN") return isConstantExpr(fct.children(1));
+		else return false;
+	}
+	def isConstantTerm(term: Node) : Boolean = {
+		val children = term.children;
+		if (term.rule == "term factor") {
+			val fct = children(0);
+			return isConstantFactor(fct);
+		}
+		else {
+			val term =children(0);
+			val fct = children(2);
+			return (isConstantTerm(term) && isConstantFactor(fct));
+		}
+		
+	}
+	def getNumExpr(expr: Node) : Int = {
+		val rule = expr.rule;
+		val children = expr.children;
+		if (rule == "expr term") return getNumTerm(children(0));
+		else if (rule == "expr expr PLUS term") {
+			return getNumExpr(children(0)) + getNumTerm(children(2));
+		}
+		else {
+			return getNumExpr(children(0)) - getNumTerm(children(2));
+		}
+	}
+	def getNumTerm(term: Node) : Int = {
+		val rule = term.rule;
+		val children = term.children;
+		if (rule == "term factor") return getNumFct(children(0));
+		else if (rule == "term term STAR factor") {
+			return getNumTerm(children(0)) * getNumFct(children(2));
+		}
+		else if (rule == "term term SLASH factor") {
+			return getNumTerm(children(0)) / getNumFct(children(2));
+		}
+		else  {
+			return getNumTerm(children(0)) % getNumFct(children(2));
+		}
+	}
+	def getNumFct(fct: Node) : Int = {
+		if (fct.rule == "factor NUM") {
+			return fct.children(0).lex.toInt;
+		}
+		else  {
+			return getNumExpr(fct.children(1));
+		}
+		//else return "NAN";
+	}
 }

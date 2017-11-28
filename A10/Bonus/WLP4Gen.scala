@@ -32,6 +32,7 @@ object WLP4Gen {
 	// def generateCodeForTerm(term: Node) : Unit = {
 	// 	GenCodeForTerm.generate(term);
 	// }
+
 	def generateCodeForFunction(id: String, procedures: Node) : Unit = {
 		val rule = procedures.rule;
 		val children = procedures.children;
@@ -233,46 +234,132 @@ object WLP4Gen {
 	def generateCodeForIF(stmt: Node, nLabels: Int, funcName: String, opt: Boolean) : Int = {
 		MIPSOutput.append("; generating for if")
 		val children = stmt.children;
-		generateCodeForTest(children(2), funcName);
-		val startLabel = "sIF" + nLabels;
-		val endLabel = "eIF" + nLabels;
-		val branchToTrue = "bne $3, $0, " + startLabel;
-		MIPSOutput.append(branchToTrue)
-		var newNumberOfLabels = generateCodeForStatements(children(9), nLabels + 1, funcName, opt);
-		val branchToEND = "beq $0, $0, " + endLabel;
-		MIPSOutput.append(branchToEND);
-		MIPSOutput.append(startLabel+":")
-		newNumberOfLabels+= generateCodeForStatements(children(5), newNumberOfLabels + 1, funcName, opt);
-		MIPSOutput.append(endLabel+":")
-		return newNumberOfLabels;
+		val test = children(2);
+		val exp1 = test.children(0);
+		val exp2 = test.children(2);
+		var isAlwaysTrue = false;
+		var isAlwaysFalse = false;
+		println(";if isConstantExpr results: exp1 " + isConstantExpr(exp1).toString);
+		println(";if isConstantExpr results: exp2 " + isConstantExpr(exp2).toString);
+		if (isConstantExpr(exp1) && isConstantExpr(exp2)) {
+			println("; is const if")
+			val exp1Val = getNumExpr(exp1).toInt;
+			val exp2Val = getNumExpr(exp2).toInt;
+			println(";exp1Val " + exp1Val.toString + "  exp2Val " + exp2Val.toString)
+			//println("; test.children(2).lex " + test.children(1).value)
+			if (test.children(1).value == "EQ") {
+				if (exp1Val != exp2Val) isAlwaysFalse = true;
+				else isAlwaysTrue = true;
+			}
+			else if (test.children(1).value == "NE") {
+				if (exp1Val == exp2Val) isAlwaysFalse = true;
+				else isAlwaysTrue = true;
+			}
+			else if (test.children(1).value == "LT") {
+				if (exp1Val >= exp2Val) isAlwaysFalse = true;
+				else isAlwaysTrue = true;
+			}
+			else if (test.children(1).value == "LE") {
+				if (exp1Val > exp2Val) isAlwaysFalse = true;
+				else isAlwaysTrue = true;
+			}
+			else if (test.children(1).value == "GE") {
+				if (exp1Val < exp2Val) isAlwaysFalse = true;
+				else isAlwaysTrue = true;
+			}
+			else if (test.children(1).value == "GT") {
+				println(";happens ")
+				if (exp1Val <= exp2Val) isAlwaysFalse = true;
+				else isAlwaysTrue = true;
+			}
+			println(";isAlwaysTrue " + isAlwaysTrue.toString + " isAlwaysFalse " + isAlwaysFalse.toString)
+			if (isAlwaysTrue) { //generate for if clause
+				println("; gen code for if ")
+				generateCodeForStatements(children(5), nLabels, funcName, opt);
+			}
+			else if (isAlwaysFalse) {
+				println("; gen code for else")
+				generateCodeForStatements(children(9), nLabels, funcName, opt);
+			}
+			return nLabels;
+		}
+		else {
+
+			generateCodeForTest(children(2), funcName);
+			val startLabel = "sIF" + nLabels;
+			val endLabel = "eIF" + nLabels;
+			val branchToTrue = "bne $3, $0, " + startLabel;
+			MIPSOutput.append(branchToTrue)
+			var newNumberOfLabels = generateCodeForStatements(children(9), nLabels + 1, funcName, opt);
+			val branchToEND = "beq $0, $0, " + endLabel;
+			MIPSOutput.append(branchToEND);
+			MIPSOutput.append(startLabel+":")
+			newNumberOfLabels+= generateCodeForStatements(children(5), newNumberOfLabels + 1, funcName, opt);
+			MIPSOutput.append(endLabel+":")
+			return newNumberOfLabels;
+		}
 
 	}
 	def generateCodeForWhile(stmt: Node, nWhile: Int, funcName: String, opt: Boolean) : Int = {
-		//println("generateCodeForWhile with " + nWhile.toString)
-		MIPSOutput.append("; generating code for while ")
 		val children = stmt.children;
-		MIPSOutput.append("sw" + nWhile.toString+ ":");
+		val test = children(2);
+		val exp1 = test.children(0);
+		val exp2 = test.children(2);
+		var isDead = false;
+		if (isConstantExpr(exp1) && isConstantExpr(exp2)) {
+			println("; is const")
+			val exp1Val = getNumExpr(exp1).toInt;
+			val exp2Val = getNumExpr(exp2).toInt;
+			println(";exp1Val " + exp1Val.toString + "  exp2Val " + exp2Val.toString)
+			println("; test.children(2).lex " + test.children(1).value)
+			if (test.children(1).value == "EQ") {
+				if (exp1Val != exp2Val) isDead = true;
+			}
+			else if (test.children(1).value == "NE") {
+				if (exp1Val == exp2Val) isDead = true;
+			}
+			else if (test.children(1).value == "LT") {
+				if (exp1Val >= exp2Val) isDead = true;
+			}
+			else if (test.children(1).value == "LE") {
+				if (exp1Val > exp2Val) isDead = true;
+			}
+			else if (test.children(1).value == "GE") {
+				if (exp1Val < exp2Val) isDead = true;
+			}
+			else if (test.children(1).value == "GT") {
+				println(";happens ")
+				if (exp1Val <= exp2Val) isDead = true;
+			}
+		}
+		if (isDead) println("; detected dead code")
+		if (!isDead) {
+			MIPSOutput.append("; generating code for while ")
+			
+			MIPSOutput.append("sw" + nWhile.toString+ ":");
 
-		generateCodeForTest(children(2), funcName);
-		val branchToEnd = "beq $3, $0, 1" //+ nWhile.toString;
-		val temp = "beq $3, $11, 3"
-		val t1= "lis $6"
-		val t2 = ".word ew" + nWhile.toString;
-		val t3 = "jr $6";
-		MIPSOutput.append(branchToEnd);
-		MIPSOutput.append(temp);
-		MIPSOutput.append(t1);
-		MIPSOutput.append(t2);
-		MIPSOutput.append(t3);
-		var newNumberOfWhiles = generateCodeForStatements(children(5), nWhile + 1, funcName, opt);
-		val goToStart1 = "lis $6";// + nWhile.toString;
-		val goToStart2 = ".word sw" + nWhile.toString;
-		val goToStart3 = "jr $6"
-		MIPSOutput.append(goToStart1);
-		MIPSOutput.append(goToStart2);
-		MIPSOutput.append(goToStart3);
-		MIPSOutput.append("ew" + nWhile.toString + ":");
-		return newNumberOfWhiles ;
+			generateCodeForTest(children(2), funcName);
+			val branchToEnd = "beq $3, $0, 1" //+ nWhile.toString;
+			val temp = "beq $3, $11, 3"
+			val t1= "lis $6"
+			val t2 = ".word ew" + nWhile.toString;
+			val t3 = "jr $6";
+			MIPSOutput.append(branchToEnd);
+			MIPSOutput.append(temp);
+			MIPSOutput.append(t1);
+			MIPSOutput.append(t2);
+			MIPSOutput.append(t3);
+			var newNumberOfWhiles = generateCodeForStatements(children(5), nWhile + 1, funcName, opt);
+			val goToStart1 = "lis $6";// + nWhile.toString;
+			val goToStart2 = ".word sw" + nWhile.toString;
+			val goToStart3 = "jr $6"
+			MIPSOutput.append(goToStart1);
+			MIPSOutput.append(goToStart2);
+			MIPSOutput.append(goToStart3);
+			MIPSOutput.append("ew" + nWhile.toString + ":");
+			return newNumberOfWhiles ;
+		}
+		return nWhile;
 	}
 	def generateCodeForWain(main: Node) : Unit = {
 		val currProcedure = main;
@@ -313,7 +400,7 @@ object WLP4Gen {
 		val dcls = currProcedure.children(8);
 
 		generateCodeForDCLs(dcls, "wain");
-		numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, "wain", false);
+		numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, "wain", true);
 		GenCodeForExpr.generate(expr, "wain");
 		
 		MIPSOutput.addEpilog(size*4, "wain");
@@ -420,7 +507,7 @@ object WLP4Gen {
 		if (children.length == 2) {
 			val stmt = children(1);
 			val others = children(0);
-			populateUsedVarsInStmts(others, funcName)
+			
 			if (stmt.rule.contains("PRINTLN")) {
 				//println("called with ")
 				val expr = stmt.children(2);
@@ -464,7 +551,7 @@ object WLP4Gen {
 				}
 
 			}
-			
+			populateUsedVarsInStmts(others, funcName)
 		}
 	}
 	def findUsedVars(procedures: Node) {
