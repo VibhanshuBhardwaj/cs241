@@ -46,7 +46,6 @@ object WLP4Gen {
 			}
 			else generateCodeForFunction(id, children(1));
 		}
-
 	}
 
 	def generateCodeForStatements(stmts: Node, nWhile: Int, name: String, opt: Boolean) : Int = {
@@ -68,7 +67,6 @@ object WLP4Gen {
 			dcl1Type = dcl1Type + c.lex;
 		}
 		return dcl1Type;
-
 	}
 
  	def generateCodeForDCLs(dcls: Node, name: String) : Unit = {
@@ -79,32 +77,36 @@ object WLP4Gen {
 			//then gen code for curr dcl.
 			val typeOfDCL = getTypeDCL(children(1));
 			val lexOfDCL = children(1).children(1).lex;
-			if (dcls.rule.contains("NUM")) { 
-				val num = children(3).lex;
-				//val lex = 
-				val lis3 = "lis $3";
-				val dotWord = ".word " + num;
-				MIPSOutput.append(lis3);
-				MIPSOutput.append(dotWord);
-				
-			}
-			else if (dcls.rule.contains("NULL")) {
-				val set3ToNull = "add $3, $0, $11";
-				MIPSOutput.append(set3ToNull)
-			}
+			if(varsUsed(name) contains lexOfDCL) {
+				if (dcls.rule.contains("NUM")) { 
+					val num = children(3).lex;
+					//val lex = 
+					val lis3 = "lis $3";
+					val dotWord = ".word " + num;
+					MIPSOutput.append(lis3);
+					MIPSOutput.append(dotWord);
+					
+				}
+				else if (dcls.rule.contains("NULL")) {
+					val set3ToNull = "add $3, $0, $11";
+					MIPSOutput.append(set3ToNull)
+				}
 
-			var offset = getValOfLexFromSymTable(lexOfDCL, name).split(" ")(1);
-			var inst ="";
-			if (offset == "0") inst+= "sw $3, "
-			else inst+= "sw $3, -"
-			inst+= offset.toString;
-			inst+="($29)"
-			MIPSOutput.append(inst);
+				var offset = getValOfLexFromSymTable(lexOfDCL, name).split(" ")(1);
+				var inst ="";
+				if (offset == "0") inst+= "sw $3, "
+				else inst+= "sw $3, -"
+				inst+= offset.toString;
+				inst+="($29)"
+				MIPSOutput.append(inst);
+			}
 		}
 	}
+
 	def generateCodeForTest(test: Node, funcName: String) : Unit = {
 		GenCodeForTest.generate(test, funcName);
 	}
+
 	def getLexFactor(factor: Node) : String = {
 		if (factor.rule == "factor ID") {
 			return factor.children(0).lex;
@@ -115,6 +117,7 @@ object WLP4Gen {
 			return " : ( "
 		}
 	}
+
 	def getLexLvalue(lvalue: Node) : String = {
 		val children =  lvalue.children;
 		if (lvalue.rule == "lvalue ID") {
@@ -133,6 +136,7 @@ object WLP4Gen {
 
 		}
 	}
+
 	def generateCodeForONEStatement(stmt: Node, nWhile: Int, name: String, opt: Boolean) : Int = {
 		val children = stmt.children;
 		if (stmt.rule.contains("PRINTLN")) {
@@ -227,10 +231,12 @@ object WLP4Gen {
 		}
 		else return nWhile;
 	}
+
 	def generateCodeForLvalue(lvalue: Node, funcName: String) : Unit = {
 
 		GenCodeForLvalue.generate(lvalue, funcName);
 	}
+
 	def generateCodeForIF(stmt: Node, nLabels: Int, funcName: String, opt: Boolean) : Int = {
 		MIPSOutput.append("; generating for if")
 		val children = stmt.children;
@@ -298,8 +304,8 @@ object WLP4Gen {
 			MIPSOutput.append(endLabel+":")
 			return newNumberOfLabels;
 		}
-
 	}
+
 	def generateCodeForWhile(stmt: Node, nWhile: Int, funcName: String, opt: Boolean) : Int = {
 		val children = stmt.children;
 		val test = children(2);
@@ -361,6 +367,7 @@ object WLP4Gen {
 		}
 		return nWhile;
 	}
+
 	def generateCodeForWain(main: Node) : Unit = {
 		val currProcedure = main;
 		var size = 0;
@@ -405,6 +412,7 @@ object WLP4Gen {
 		
 		MIPSOutput.addEpilog(size*4, "wain");
 	}
+
 	def generateCodeForProcedure(procedure: Node) : Unit = {
 		val children = procedure.children;
 		val name = children(1).lex;
@@ -429,6 +437,7 @@ object WLP4Gen {
 			MIPSOutput.addEpilog(size*4, name)
 		}
 	}
+
 	def generateCode(proceduresTree: Node) : Unit = {
 		val children = proceduresTree.children;
 		if (proceduresTree.rule == "procedures main") {
@@ -440,6 +449,7 @@ object WLP4Gen {
 			generateCode(children(1));
 		}
 	}
+
 	def populateFunctionsUsed (tree: Node) {
 		if (tree.rule.startsWith("factor ID LPAREN")) {
 			functionsUsed += tree.children(0).lex;
@@ -450,6 +460,7 @@ object WLP4Gen {
 			}
 		}
 	}
+
 	def populateFunctionsUsedProcedures(procedures: Node) {
 		val children = procedures.children;
 		if (procedures.rule.contains("main")) {
@@ -466,7 +477,6 @@ object WLP4Gen {
 				populateFunctionsUsed(children(0).children(9));
 			}
 		}
-
 	}
 
 	def populateUsedVarsInExpr(expr: Node, funcName: String) {
@@ -483,6 +493,7 @@ object WLP4Gen {
 			}
 		}
 	}
+
 	def doesExpHaveFuncCall(expr: Node) : Boolean = {
 		if (expr.rule.contains("factor ID LPAREN")) return true;
 		else if (expr.children.length > 0) {
@@ -493,14 +504,15 @@ object WLP4Gen {
 			return false;
 		}
 		else return false;
-
 	}
+
 	def doesLvalueHaveStar(lval: Node) : Boolean = {
 		if (lval.rule == "lvalue ID") return false;
 		else if (lval.rule == "lvalue LPAREN lvalue RPAREN") return doesLvalueHaveStar(lval.children(1));
 		else if (lval.rule == "lvalue STAR factor") return true;
 		else return false;
 	}
+
 	def populateUsedVarsInStmts(stmts: Node, funcName: String) {
 		//println("populateUsedVarsInStmts "+ stmts.rule)
 		val children = stmts.children;
@@ -528,8 +540,8 @@ object WLP4Gen {
 				for (x<- varsUsed(funcName)) {
 					println(";inside" + x);
 				}
-				populateUsedVarsInExpr(elsestmts, funcName);
-				populateUsedVarsInExpr(ifstmts, funcName);
+				populateUsedVarsInStmts(elsestmts, funcName);
+				populateUsedVarsInStmts(ifstmts, funcName);
 				println("; happening with if else AFTER");
 				for (x<- varsUsed(funcName)) {
 					println(";outside" + x);
@@ -554,6 +566,7 @@ object WLP4Gen {
 			populateUsedVarsInStmts(others, funcName)
 		}
 	}
+
 	def findUsedVars(procedures: Node) {
 		val children = procedures.children;
 		val empty = Set[String]();
@@ -577,6 +590,12 @@ object WLP4Gen {
 			findUsedVars(children(1));
 		}
 	}
+
+	
+	
+
+
+
 	def main(args: Array[String]) : Unit = {
 		
 		ParseTree = ParseTreeBuilder.construct(ParseTree).children(0);
@@ -614,8 +633,7 @@ object WLP4Gen {
 		//generateCodeForStatements()
 		generateCode(procedures);
 		//SymbolTableBuilder.debugPrintSymTable(symTable);
-		
-
 	}
+
 
 }

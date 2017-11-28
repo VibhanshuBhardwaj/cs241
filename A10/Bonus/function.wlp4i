@@ -1,0 +1,157 @@
+start BOF procedures EOF
+BOF BOF
+procedures main
+main INT WAIN LPAREN dcl COMMA dcl RPAREN LBRACE dcls statements RETURN expr SEMI RBRACE
+INT int
+WAIN wain
+LPAREN (
+dcl type ID
+type INT
+INT int
+ID a
+COMMA ,
+dcl type ID
+type INT
+INT int
+ID b
+RPAREN )
+LBRACE {
+dcls dcls dcl BECOMES NUM SEMI
+dcls dcls dcl BECOMES NUM SEMI
+dcls dcls dcl BECOMES NUM SEMI
+dcls
+dcl type ID
+type INT
+INT int
+ID p
+BECOMES =
+NUM 0
+SEMI ;
+dcl type ID
+type INT
+INT int
+ID q
+BECOMES =
+NUM 0
+SEMI ;
+dcl type ID
+type INT
+INT int
+ID r
+BECOMES =
+NUM 0
+SEMI ;
+statements statements statement
+statements
+statement lvalue BECOMES expr SEMI
+lvalue ID
+ID r
+BECOMES =
+expr expr PLUS term
+expr term
+term factor
+factor LPAREN expr RPAREN
+LPAREN (
+expr expr PLUS term
+expr term
+term factor
+factor ID
+ID p
+PLUS +
+term factor
+factor LPAREN expr RPAREN
+LPAREN (
+expr expr PLUS term
+expr term
+term factor
+factor NUM
+NUM 41
+PLUS +
+term factor
+factor NUM
+NUM 1
+RPAREN )
+RPAREN )
+PLUS +
+term factor
+factor LPAREN expr RPAREN
+LPAREN (
+expr expr PLUS term
+expr expr MINUS term
+expr expr PLUS term
+expr term
+term factor
+factor NUM
+NUM 66
+PLUS +
+term factor
+factor NUM
+NUM 3
+MINUS -
+term factor
+factor NUM
+NUM 3
+PLUS +
+term factor
+factor LPAREN expr RPAREN
+LPAREN (
+expr expr PLUS term
+expr expr PLUS term
+expr expr PLUS term
+expr expr MINUS term
+expr expr PLUS term
+expr expr PLUS term
+expr term
+term factor
+factor NUM
+NUM 3
+PLUS +
+term factor
+factor NUM
+NUM 0
+PLUS +
+term factor
+factor NUM
+NUM 5
+MINUS -
+term factor
+factor NUM
+NUM 6
+PLUS +
+term factor
+factor NUM
+NUM 6
+PLUS +
+term factor
+factor NUM
+NUM 5
+PLUS +
+term factor
+factor LPAREN expr RPAREN
+LPAREN (
+expr expr MINUS term
+expr expr PLUS term
+expr term
+term factor
+factor NUM
+NUM 1
+PLUS +
+term factor
+factor NUM
+NUM 2
+MINUS -
+term factor
+factor NUM
+NUM 3
+RPAREN )
+RPAREN )
+RPAREN )
+SEMI ;
+RETURN return
+expr term
+term factor
+factor ID
+ID r
+SEMI ;
+RBRACE }
+EOF EOF
