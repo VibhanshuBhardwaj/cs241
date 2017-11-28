@@ -27,6 +27,7 @@ object WLP4Gen {
 
 	type FunctionSymTable = (String, Map[String, String], Int);
 	var functionsUsed = Set[String]();
+	var varsUsed = Map[String, Set[String]]();
 
 	// def generateCodeForTerm(term: Node) : Unit = {
 	// 	GenCodeForTerm.generate(term);
@@ -46,15 +47,7 @@ object WLP4Gen {
 		}
 
 	}
-	// def generateCodeForFactor(factor: Node) : Unit = {
-	// 	if (factor.rule == "factor ID LPAREN RPAREN") {
-	// 		val procedures = ParseTree.children(1);
-	// 		generateCodeForFunction(factor.children(0).lex, procedures);
-	// 	}
-	// 	else { 
-	// 		GenCodeForFactor.generate(factor);
-	// 	}
-	// }
+
 	def generateCodeForStatements(stmts: Node, nWhile: Int, name: String) : Int = {
 		val children = stmts.children;
 		if (children.length == 2) {
@@ -100,7 +93,6 @@ object WLP4Gen {
 			}
 
 			var offset = getValOfLexFromSymTable(lexOfDCL, name).split(" ")(1);
-	//		println("offset from lex "  + offset);
 			var inst ="";
 			if (offset == "0") inst+= "sw $3, "
 			else inst+= "sw $3, -"
@@ -166,25 +158,36 @@ object WLP4Gen {
 			
 			val expr = children(2);
 			val lvalue = children(0);
-			//println("; now generating code for expr from " + stmt.rule);
-			GenCodeForExpr.generate(expr, name);
+			
+			
 			
 			//
 			//val typeOfLex =  TypeChecker.checkTypes(children(0), FINALSYMTABLE, "wain");
 			//println("typeOfLex : " +typeOfLex)
 			var inst ="";
+			println("; lvalue rule" + lvalue.rule);
 			if (!lvalue.rule.contains("STAR")) {
 				val lex = getLexLvalue(children(0));
-				//println("lex is "  + lex)
-				val offset = getValOfLexFromSymTable(lex, name).split(" ")(1);
-				//println("offset is " + offset)
-				if (offset == "0") inst+= "sw $3, "
-				else inst+= "sw $3, -"
-				inst+= offset.toString;
-				inst+="($29)"
-				MIPSOutput.append(inst);
+				if (true) {
+					println("; generating code for "  + lex)
+					GenCodeForExpr.generate(expr, name);
+					
+					//println("lex is "  + lex)
+					val offset = getValOfLexFromSymTable(lex, name).split(" ")(1);
+					//println("offset is " + offset)
+					if (offset == "0") inst+= "sw $3, "
+					else inst+= "sw $3, -"
+					inst+= offset.toString;
+					inst+="($29)"
+					MIPSOutput.append(inst);
+				}
+				else {
+					println("; not generating code for " + lex)
+				}
 			}
 			else {
+				println("; normal code gen has star ")
+				GenCodeForExpr.generate(expr, name);
 				MIPSOutput.append("; de-ref a pointer and assign to it")
 				Utils.push(3);
 				generateCodeForLvalue(children(0), name);
@@ -383,8 +386,60 @@ object WLP4Gen {
 		}
 
 	}
-	def populateFunctionsUsedInWain(tree: Node) {
-		
+
+	def populateUsedVarsInExpr(expr: Node, funcName: String) {
+		val children = expr.children;
+
+		if (expr.rule == "factor ID") {
+			var varlex = children(0).lex;
+			varsUsed(funcName) += varlex;
+		}
+		else {
+			for (c<- children) {
+				populateUsedVarsInExpr(c, funcName);
+			}
+		}
+	}
+	def populateUsedVarsInStmts(stmts: Node, funcName: String) {
+		//println("populateUsedVarsInStmts "+ stmts.rule)
+		val children = stmts.children;
+		if (children.length == 2) {
+			val stmt = children(1);
+			val others = children(0);
+			if (stmt.rule.contains("PRINTLN")) {
+				//println("called with ")
+				val expr = stmt.children(2);
+				populateUsedVarsInExpr(expr, funcName);
+			}
+			else if (stmt.rule.contains("DELETE")) {
+				val expr = stmt.children(3)
+				populateUsedVarsInExpr(expr, funcName)
+			}
+			populateUsedVarsInStmts(others, funcName)
+		}
+	}
+	def findUsedVars(procedures: Node) {
+		val children = procedures.children;
+		val empty = Set[String]();
+		if (procedures.rule.contains("main")) {
+			val MainChildren = children(0).children;
+			val expr = MainChildren(11);
+			val stmts = MainChildren(9);
+			varsUsed = varsUsed + ("wain" -> empty)
+			populateUsedVarsInExpr(expr, "wain");
+			populateUsedVarsInStmts(stmts, "wain");
+			
+		}
+		else if (procedures.rule == "procedures procedure procedures") {
+			val proc = children(0);
+			val procstmts = proc.children(7);
+			val procexpr = proc.children(9);
+			val id = proc.children(1).lex;
+			varsUsed = varsUsed + (id -> empty)
+			populateUsedVarsInExpr(procexpr, id);
+			populateUsedVarsInStmts(procstmts, id);
+			findUsedVars(children(1));
+		}
 	}
 	def main(args: Array[String]) : Unit = {
 		
@@ -398,10 +453,20 @@ object WLP4Gen {
 		val procedures = ParseTree.children(1);
 
 		populateFunctionsUsedProcedures(procedures);
+		
+		for (x <- functionsUsed) {
+			
+			//varsUsed = varsUsed + (x -> empty)
+		}
+		//varsUsed = varsUsed + ("wain" -> empty)
 
-		//for (f<- functionsUsed) {
-		//	println(";have used " + f);
-		//Ffuncti}
+		findUsedVars(procedures);
+		for ((k, v)<- varsUsed) {
+			println(";function " + k);
+			for (x <- v) {
+				println(";have used " + x);
+			}
+		}
 		signatureMap = SymbolTableBuilder.getSignatureMap();
 		TypeChecker.setup(signatureMap, signatureMap, FINALSYMTABLE)
 		MIPSOutput.init();
