@@ -28,11 +28,54 @@ object WLP4Gen {
 	type FunctionSymTable = (String, Map[String, String], Int);
 	var functionsUsed = Set[String]();
 	var varsUsed = Map[String, Set[String]]();
+	val availableRegisters = Array("8", "9", "10", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28");
+	var unAddressedUsedVars = Map[String, Int]();
+	var MappingToRegisters = Map[String, String]();
+	
+	var constMapping = Map[String, String]();
 
-	// def generateCodeForTerm(term: Node) : Unit = {
-	// 	GenCodeForTerm.generate(term);
-	// }
+	def populateVarCountsProcedures(procedures: Node) {
+		val children = procedures.children;
+		if (procedures.rule.contains("main")) {
+			val MainChildren = children(0).children;
+			populateVarCounts(MainChildren(9), "wain");
+			populateVarCounts(MainChildren(11), "wain");
+		}
+		else {
 
+			populateVarCountsProcedures(children(1));
+			val nameCurr = children(0).children(1).lex;
+			if (functionsUsed(nameCurr)) {
+				populateVarCounts(children(0).children(7), nameCurr);
+				populateVarCounts(children(0).children(9), nameCurr);
+			}
+		}
+	}
+	def populateVarCounts(tree: Node, funcName: String) {
+		val children = tree.children;
+		val rule = tree.rule;
+		if (rule == "factor ID") {
+			val lex = children(0).lex;
+			if (varsUsed(funcName) contains lex) { 
+				val fullName = funcName + " " + lex;
+				if (unAddressedUsedVars contains fullName) {unAddressedUsedVars(fullName) = unAddressedUsedVars(fullName) + 1;}
+				else {
+					unAddressedUsedVars += (fullName -> 1);
+				}
+			}
+		}
+		else if (rule == "factor AMP lvalue") {
+			val lex = getLexLvalue(children(1));
+			if (varsUsed(funcName) contains lex) {
+				val fullName = funcName + " " + lex;
+				if (unAddressedUsedVars contains fullName) {unAddressedUsedVars(fullName) = -10000;}
+			}
+			//remove from unAddressedUsedVars
+		}
+		else {
+			for (c<- children) populateVarCounts(c, funcName);
+		}
+	}
 	def generateCodeForFunction(id: String, procedures: Node) : Unit = {
 		val rule = procedures.rule;
 		val children = procedures.children;
@@ -120,6 +163,7 @@ object WLP4Gen {
 
 	def getLexLvalue(lvalue: Node) : String = {
 		val children =  lvalue.children;
+		//println(";lvalue.rule " + lvalue.rule)
 		if (lvalue.rule == "lvalue ID") {
 			val lex= children(0).lex;
 			return lex;
@@ -165,11 +209,11 @@ object WLP4Gen {
 			
 
 			var inst ="";
-			println("; lvalue rule" + lvalue.rule);
+			//println("; lvalue rule" + lvalue.rule);
 			if (!lvalue.rule.contains("STAR")) {
 				val lex = getLexLvalue(children(0));
 				if (  !opt || (varsUsed(name) contains lex) || (doesExpHaveFuncCall(expr))) {
-					println("; generating code for "  + lex)
+					//println("; generating code for "  + lex)
 					GenCodeForExpr.generate(expr, name);
 					
 					//println("lex is "  + lex)
@@ -245,12 +289,12 @@ object WLP4Gen {
 		val exp2 = test.children(2);
 		var isAlwaysTrue = false;
 		var isAlwaysFalse = false;
-		println(";if isConstantExpr results: exp1 " + isConstantExpr(exp1).toString);
-		println(";if isConstantExpr results: exp2 " + isConstantExpr(exp2).toString);
-		if (isConstantExpr(exp1) && isConstantExpr(exp2)) {
+		println(";if isConstantExpr results: exp1 " + isConstantExpr(exp1, funcName).toString);
+		println(";if isConstantExpr results: exp2 " + isConstantExpr(exp2, funcName).toString);
+		if (isConstantExpr(exp1, funcName) && isConstantExpr(exp2, funcName)) {
 			println("; is const if")
-			val exp1Val = getNumExpr(exp1).toInt;
-			val exp2Val = getNumExpr(exp2).toInt;
+			val exp1Val = getNumExpr(exp1, funcName).toInt;
+			val exp2Val = getNumExpr(exp2, funcName).toInt;
 			println(";exp1Val " + exp1Val.toString + "  exp2Val " + exp2Val.toString)
 			//println("; test.children(2).lex " + test.children(1).value)
 			if (test.children(1).value == "EQ") {
@@ -312,10 +356,11 @@ object WLP4Gen {
 		val exp1 = test.children(0);
 		val exp2 = test.children(2);
 		var isDead = false;
-		if (isConstantExpr(exp1) && isConstantExpr(exp2)) {
+		println("; " + isConstantExpr(exp1, funcName).toString +"  " + isConstantExpr(exp2, funcName).toString)
+		if (isConstantExpr(exp1, funcName) && isConstantExpr(exp2, funcName)) {
 			println("; is const")
-			val exp1Val = getNumExpr(exp1).toInt;
-			val exp2Val = getNumExpr(exp2).toInt;
+			val exp1Val = getNumExpr(exp1, funcName).toInt;
+			val exp2Val = getNumExpr(exp2, funcName).toInt;
 			println(";exp1Val " + exp1Val.toString + "  exp2Val " + exp2Val.toString)
 			println("; test.children(2).lex " + test.children(1).value)
 			if (test.children(1).value == "EQ") {
@@ -536,16 +581,16 @@ object WLP4Gen {
 				val elsestmts = stmt.children(9);
 				//addAllVars(expr, funcName);
 				//addAllVars(ifstmts, fun)
-				println("; happening with if else before");
-				for (x<- varsUsed(funcName)) {
-					println(";inside" + x);
-				}
+				// println("; happening with if else before");
+				// for (x<- varsUsed(funcName)) {
+				// 	println(";inside" + x);
+				// }
 				populateUsedVarsInStmts(elsestmts, funcName);
 				populateUsedVarsInStmts(ifstmts, funcName);
-				println("; happening with if else AFTER");
-				for (x<- varsUsed(funcName)) {
-					println(";outside" + x);
-				}
+				// println("; happening with if else AFTER");
+				// for (x<- varsUsed(funcName)) {
+				// 	println(";outside" + x);
+				// }
 				
 			}
 			else if (stmt.rule.contains("WHILE")) {
@@ -558,7 +603,7 @@ object WLP4Gen {
 				val lex = getLexLvalue(stmt.children(0));
 				val expr = stmt.children(2);
 				if ((varsUsed(funcName) contains lex) ||doesLvalueHaveStar(stmt.children(0))) {
-					println("; populating lvalue's children " + lex);
+//					println("; populating lvalue's children " + lex);
 					populateUsedVarsInExpr(expr, funcName);
 				}
 
@@ -590,11 +635,86 @@ object WLP4Gen {
 			findUsedVars(children(1));
 		}
 	}
+	def populateConsts(dcls: Node, funcName: String) {
+		//println("; called with " + funcName)
+		//println("; rule here " + dcls.rule)
+		if (dcls.rule == "dcls dcls dcl BECOMES NUM SEMI") {
+			val lex = dcls.children(1).children(1).lex;
+			val num = dcls.children(3).lex;
+			val fullName = funcName + " " + lex;
+			//println("dcls full Name " + fullName)
+			constMapping = constMapping + (fullName -> num);
+			populateConsts(dcls.children(0), funcName);
+		}
+		else if (dcls.rule == "dcls dcls dcl BECOMES NULL SEMI") {
+			populateConsts(dcls.children(0), funcName);
+		}
+	}
+	def removeFromConsts(stmts: Node, funcName: String) {
+		val rule = stmts.rule;
+		val children = stmts.children;
+		if (rule == "statements statements statement") {
+			val s = children(1);
+			//println("; one statement rule " + s.rule)
+			if (s.rule == "statement lvalue BECOMES expr SEMI") {
+				val lval_lex = getLexLvalue(s.children(0));
+				val fullName = funcName + " "  + lval_lex;
+			//	println("; removing from constMapping " + fullName);
+				constMapping = constMapping - fullName;
+			}
+			else if (s.rule.contains("WHILE")) removeFromConsts(s.children(5), funcName);
+			else if (s.rule.contains("IF")) {
+				removeFromConsts(s.children(5), funcName);
+				removeFromConsts(s.children(9), funcName);
+			}
+			removeFromConsts(children(0), funcName);
+		}
+	}
+	def identifyConsts(procedures: Node) {
+		val children = procedures.children;
+		if (procedures.rule.contains("main")) {
+			val MainChildren = children(0).children;
+			val expr = MainChildren(11);
+			val stmts = MainChildren(9);
+			val dcls = MainChildren(8);
+			populateConsts(dcls, "wain");
+			//varsUsed = varsUsed + ("wain" -> empty)
+			//populateUsedVarsInExpr(expr, "wain");
+			removeFromConsts(stmts, "wain");
+			
+		}
+		else if (procedures.rule == "procedures procedure procedures") {
+			val proc = children(0);
+			val procstmts = proc.children(7);
+			val procexpr = proc.children(9);
+			val id = proc.children(1).lex;
+			val dcls = proc.children(6);
+			populateConsts(dcls, id);
+			//println("; just populated for function " + id)
+			
+			//varsUsed = varsUsed + (id -> empty)
+			//populateUsedVarsInExpr(procexpr, id);
+			removeFromConsts(procstmts, id);
+			identifyConsts(children(1));
+		}
+	}
 
 	
-	
 
-
+	def getMostUsedVars() {
+		val sorted = unAddressedUsedVars.toSeq.sortBy(x => x._2.toInt).reverse;
+		println("; ordered by usage ");
+		var rCount = 0;
+		for (c<- sorted) {
+			if (rCount < 20) { 
+				if (c._2 > 0) {
+					MappingToRegisters = MappingToRegisters + (c._1 -> availableRegisters(rCount));
+					rCount = rCount + 1;
+				}
+			}
+			//println("; var " + c._1 +  " count " + c._2);
+		}
+	}
 
 	def main(args: Array[String]) : Unit = {
 		
@@ -616,16 +736,19 @@ object WLP4Gen {
 		//varsUsed = varsUsed + ("wain" -> empty)
 
 		findUsedVars(procedures);
-		for ((k, v)<- varsUsed) {
-			println(";function " + k);
-			for (x <- v) {
-				println(";have used " + x);
-			}
+		populateVarCountsProcedures(procedures);
+		
+		getMostUsedVars();
+		identifyConsts(procedures);
+		for ((k, v)<- constMapping) {
+			println(";function var " + k);
+			println("; const value " + v);
 		}
+		GenCodeForFactor.init(MappingToRegisters);
 		signatureMap = SymbolTableBuilder.getSignatureMap();
 		TypeChecker.setup(signatureMap, signatureMap, FINALSYMTABLE)
 		MIPSOutput.init();
-		Utils.init(FINALSYMTABLE);
+		Utils.init(FINALSYMTABLE, constMapping);
 		GenCodeForExpr.init(FINALSYMTABLE);
 		GenCodeForTest.init(FINALSYMTABLE);
 

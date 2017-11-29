@@ -1,3 +1,8 @@
+import scala.collection.mutable.ArrayBuffer;
+import scala.io.Source;
+import scala.collection.mutable.Stack;
+import scala.collection.mutable.Map;
+
 import gen.Node;
 
 import MIPSOutput._;
@@ -6,6 +11,10 @@ import GenCodeForExpr._;
 import Utils._;
 
 object GenCodeForFactor {
+	var MappingToRegisters = Map[String, String]();
+	def init(mp: Map[String, String]) {
+		MappingToRegisters =mp;
+	}
 	def processArglist(arglist: Node, funcName: String) {
 		MIPSOutput.append("; processing ")
 		val children = arglist.children;
@@ -91,11 +100,11 @@ object GenCodeForFactor {
 
 			Utils.push(31);
 
-			MIPSOutput.append("lis $10");
+			MIPSOutput.append("lis $6");
 			MIPSOutput.append(".word " + "F" + children(0).lex)
 			MIPSOutput.append("sub $29, $30, $4");
 			//MIPSOutput.append("sub $30, $30, $4")
-			MIPSOutput.append("jalr $10")
+			MIPSOutput.append("jalr $6")
 
 			Utils.pop(31);
 
@@ -110,14 +119,14 @@ object GenCodeForFactor {
 
 			Utils.push(31);
 
-			MIPSOutput.append("add $21, $30, $0")
+			MIPSOutput.append("add $6, $30, $0")
 			
 			processArglist(children(2), funcName);
-			MIPSOutput.append("sub $29, $21, $4"); // HERE
-			MIPSOutput.append("add $30, $21, $0"); //REMOVE THIS MAYBE?
-			MIPSOutput.append("lis $10");
+			MIPSOutput.append("sub $29, $6, $4"); // HERE
+			MIPSOutput.append("add $30, $6, $0"); //REMOVE THIS MAYBE?
+			MIPSOutput.append("lis $6");
 			MIPSOutput.append(".word " + "F" + children(0).lex)
-			MIPSOutput.append("jalr $10")
+			MIPSOutput.append("jalr $6")
 
 			Utils.pop(31);
 			Utils.pop(29);

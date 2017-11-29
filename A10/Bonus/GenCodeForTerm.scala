@@ -9,8 +9,8 @@ object GenCodeForTerm {
 	def generate(term: Node, funcName: String) : Unit = {
 		val children = term.children;
 		val rule = term.rule;
-		if (isConstantTerm(term)) {
-			val result = getNumTerm(term);
+		if (isConstantTerm(term, funcName)) {
+			val result = getNumTerm(term, funcName);
 			if (result == 1) {
 				MIPSOutput.append("add $3, $0, $11");
 			}

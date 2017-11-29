@@ -8,7 +8,7 @@ import MIPSOutput._;
 
 object Utils {
 	var FINALSYMTABLE = ArrayBuffer[FunctionSymTable]();
-
+	var constMappping = Map[String, String]();
 	type FunctionSymTable = (String, Map[String, String], Int);
 
 
@@ -33,72 +33,83 @@ object Utils {
 		MIPSOutput.append("add $30, $30, $4");
 		MIPSOutput.append(inst);
 	}
-	def init(table: ArrayBuffer[FunctionSymTable]) {
+	def init(table: ArrayBuffer[FunctionSymTable], cm: Map[String, String]) {
 		FINALSYMTABLE =table;
+		constMappping = cm;
 	}
 
-	def isConstantExpr(expr: Node) : Boolean = {
+	def isConstantExpr(expr: Node, funcName: String) : Boolean = {
 		val children = expr.children;
 		if (expr.rule == "expr term") {
 			val term = children(0);
-			return isConstantTerm(term);
+			return isConstantTerm(term, funcName);
 		}
 		if ((expr.rule == "expr expr PLUS term") || (expr.rule == "expr expr MINUS term")) {
-			return (isConstantExpr(children(0)) && isConstantTerm(children(2)))
+			return (isConstantExpr(children(0), funcName) && isConstantTerm(children(2), funcName))
 		}
 		else return false;
 	}
-	def isConstantFactor(fct: Node) : Boolean = {
+	def isConstantFactor(fct: Node, funcName: String) : Boolean = {
 		if (fct.rule == "factor NUM") {
 			return true;
 		}
-		else if (fct.rule == "factor LPAREN expr RPAREN") return isConstantExpr(fct.children(1));
+		else if (fct.rule == "factor ID") {
+			val fullName = funcName + " " + fct.children(0).lex;
+			//println("; fullName " + fullName)
+			return (constMappping contains fullName);
+		}
+		else if (fct.rule == "factor LPAREN expr RPAREN") return isConstantExpr(fct.children(1), funcName);
 		else return false;
 	}
-	def isConstantTerm(term: Node) : Boolean = {
+	def isConstantTerm(term: Node, funcName: String) : Boolean = {
 		val children = term.children;
 		if (term.rule == "term factor") {
 			val fct = children(0);
-			return isConstantFactor(fct);
+			return isConstantFactor(fct, funcName);
 		}
 		else {
 			val term =children(0);
 			val fct = children(2);
-			return (isConstantTerm(term) && isConstantFactor(fct));
+			return (isConstantTerm(term, funcName) && isConstantFactor(fct, funcName));
 		}
 		
 	}
-	def getNumExpr(expr: Node) : Int = {
+	def getNumExpr(expr: Node, funcName: String) : Int = {
 		val rule = expr.rule;
 		val children = expr.children;
-		if (rule == "expr term") return getNumTerm(children(0));
+		if (rule == "expr term") return getNumTerm(children(0), funcName);
 		else if (rule == "expr expr PLUS term") {
-			return getNumExpr(children(0)) + getNumTerm(children(2));
+			return getNumExpr(children(0), funcName) + getNumTerm(children(2), funcName);
 		}
 		else {
-			return getNumExpr(children(0)) - getNumTerm(children(2));
+			return getNumExpr(children(0), funcName) - getNumTerm(children(2), funcName);
 		}
 	}
-	def getNumTerm(term: Node) : Int = {
+	def getNumTerm(term: Node, funcName: String) : Int = {
 		val rule = term.rule;
 		val children = term.children;
-		if (rule == "term factor") return getNumFct(children(0));
+		if (rule == "term factor") return getNumFct(children(0), funcName);
 		else if (rule == "term term STAR factor") {
-			return getNumTerm(children(0)) * getNumFct(children(2));
+			return getNumTerm(children(0), funcName) * getNumFct(children(2), funcName);
 		}
 		else if (rule == "term term SLASH factor") {
-			return getNumTerm(children(0)) / getNumFct(children(2));
+			return getNumTerm(children(0), funcName) / getNumFct(children(2), funcName);
 		}
 		else  {
-			return getNumTerm(children(0)) % getNumFct(children(2));
+			return getNumTerm(children(0), funcName) % getNumFct(children(2), funcName);
 		}
 	}
-	def getNumFct(fct: Node) : Int = {
+	def getNumFct(fct: Node, funcName: String) : Int = {
 		if (fct.rule == "factor NUM") {
 			return fct.children(0).lex.toInt;
 		}
+		else if (fct.rule == "factor ID") {
+			val lex= fct.children(0).lex;
+			val fullName = funcName + " " + lex;
+			return constMappping(fullName).toInt;
+		}
 		else  {
-			return getNumExpr(fct.children(1));
+			return getNumExpr(fct.children(1), funcName);
 		}
 		//else return "NAN";
 	}

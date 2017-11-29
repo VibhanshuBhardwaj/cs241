@@ -17,8 +17,8 @@ object GenCodeForExpr {
 
 	def generate(expr: Node, funcName:String) : Unit = {
 		val children = expr.children;
-		if (isConstantExpr(expr)) {
-			val result = getNumExpr(expr);
+		if (isConstantExpr(expr, funcName)) {
+			val result = getNumExpr(expr, funcName);
 			if (result == 1) {
 				MIPSOutput.append("add $3, $0, $11");
 			}
