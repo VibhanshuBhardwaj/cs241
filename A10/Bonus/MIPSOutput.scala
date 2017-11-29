@@ -27,13 +27,13 @@ object MIPSOutput {
 		output+= "; adding prolog for " + name;
 		if(name == "wain") {
 			output+= "sub $29, $30, $4"
-			output+= "add $7, $31, $0"
+			output+= "add $28, $31, $0"
 		}
 		
 
-		output+= "lis $6"
+		output+= "lis $12"
 		output+= s".word $actualSize"
-		output+= "sub $30, $30, $6"
+		output+= "sub $30, $30, $12"
 		
 		if (name == "wain") { 
 			output+= "sw $1, 0($29)"
@@ -50,7 +50,7 @@ object MIPSOutput {
 		Utils.pop(31);
 		output+="add $30, $29, $4"
 		if (name == "wain") {
-			output+="add $31, $7, $0"
+			output+="add $31, $28, $0"
 		//	output+="lw $31, -"+ sizeSymTable.toString+ "($29)";
 			
 		}

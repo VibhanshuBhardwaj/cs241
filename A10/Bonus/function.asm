@@ -1,4 +1,3 @@
-; ordered by usage 
 ;function var wain q
 ; const value 6
 ;function var wain p
@@ -16,10 +15,10 @@ beq $0, $0, Fwain
 Fwain:
 ; adding prolog for wain
 sub $29, $30, $4
-add $7, $31, $0
-lis $6
+add $28, $31, $0
+lis $12
 .word 20
-sub $30, $30, $6
+sub $30, $30, $12
 sw $1, 0($29)
 sw $2, -4($29)
 sw $31, -4($30)
@@ -82,5 +81,5 @@ lw $3, -16($29)
 add $30, $30, $4
 lw $31, -4($30)
 add $30, $29, $4
-add $31, $7, $0
+add $31, $28, $0
 jr $31

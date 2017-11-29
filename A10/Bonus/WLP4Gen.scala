@@ -736,9 +736,9 @@ object WLP4Gen {
 		//varsUsed = varsUsed + ("wain" -> empty)
 
 		findUsedVars(procedures);
-		populateVarCountsProcedures(procedures);
+		//populateVarCountsProcedures(procedures);
 		
-		getMostUsedVars();
+		//getMostUsedVars();
 		identifyConsts(procedures);
 		for ((k, v)<- constMapping) {
 			println(";function var " + k);
