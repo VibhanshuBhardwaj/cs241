@@ -1,7 +1,24 @@
-;function var wain q
-; const value 6
-;function var wain p
-; const value 5
+; ordered by usage 
+available: 12
+available: 8
+available: 19
+available: 23
+available: 15
+available: 9
+available: 22
+available: 26
+available: 13
+available: 24
+available: 16
+available: 10
+available: 21
+available: 17
+available: 25
+available: 14
+available: 20
+available: 27
+available: 18
+available: 28
 ; false  true
 .import print
 .import init
@@ -33,6 +50,12 @@ add $2, $0, $0
 jalr $10
 add $30, $30, $4
 lw $2, -4($30)
+lis $3
+.word 10
+sw $3, -8($29)
+lis $3
+.word 6
+sw $3, -12($29)
 lis $3
 .word 10
 sw $3, -16($29)
@@ -77,7 +100,8 @@ lis $6
 .word sw1
 jr $6
 ew1:
-lw $3, -16($29)
+lis $3
+.word 600
 add $30, $30, $4
 lw $31, -4($30)
 add $30, $29, $4

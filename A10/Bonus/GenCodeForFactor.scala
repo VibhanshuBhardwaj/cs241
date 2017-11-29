@@ -30,53 +30,72 @@ object GenCodeForFactor {
 			processArglist(children(2), funcName);
 		}
 	}
-	def generate(factor: Node, funcName: String) {
+	def generate(factor: Node, funcName: String, regSet: Set[String]) : String = {
 		val children = factor.children;
 		val rule = factor.rule
 		if (rule == "factor LPAREN expr RPAREN") {
 			//println("for expr called with " +children(1).value)
-			GenCodeForExpr.generate(children(1), funcName);
+			return GenCodeForExpr.generate(children(1), funcName, regSet);
 		}
 		else if (rule == "factor NUM") {
+			var r = "";
+
+			if (regSet.size == 0) r = "3"
+			else r = regSet.head;
+
 			val num = children(0);
 			val lex = num.lex;
-			val loadWordTo3 = "lis $3";
+			val loadWordTo3 = "lis $" + r;
 			var constToBeLoaded = ".word " + lex;
 			MIPSOutput.append(loadWordTo3);
 			MIPSOutput.append(constToBeLoaded);
+			return r;
 		}
 		else if (rule =="factor STAR factor") {
 			MIPSOutput.append("; pointers! factor -> STAR factor")
-			generate(children(1), funcName);
+			generate(children(1), funcName, regSet);
 			val takeAddress = "lw $3, 0($3)";
 			MIPSOutput.append(takeAddress);
+			return "3"
 		}
 		else if (rule == "factor AMP lvalue") {
-			GenCodeForLvalue.generate(children(1), funcName)
+			GenCodeForLvalue.generate(children(1), funcName);
+			return "3"
 		}
 		else if (rule == "factor ID") {
 			val id = children(0);
 			val lex = id.lex;
-		
-			var offset = Utils.getValOfLexFromSymTable(lex, funcName).split(" ")(1);
-			var inst ="";
-			if (offset == "0") inst+= "lw $3, "
-			else inst+= "lw $3, -"
-			inst+= offset.toString;
-			inst+="($29)"
-			MIPSOutput.append(inst);
+			var r = "";
+			val fullName = funcName + " " + lex;
+			if (regSet.size == 0) r = "3"
+			else r = regSet.head;
+			if (MappingToRegisters contains fullName) r = MappingToRegisters(fullName);
+			if (r == "3") {
+				var offset = Utils.getValOfLexFromSymTable(lex, funcName).split(" ")(1);
+				var inst ="";
+				if (offset == "0") inst+= "lw $3, "
+				else inst+= "lw $3, -"
+				inst+= offset.toString;
+				inst+="($29)"
+				MIPSOutput.append(inst);
+				return "3";
+			}
+			else {
+				return r;
+			}
 		}
-		else if (rule == "factor NULL") {
+		else if (rule == "factor NULL") { //FLAG
 			val set3ToNull = "add $3, $0, $11";
 			MIPSOutput.append(set3ToNull)
+			return "3"
 		}
 		else if (rule == "factor NEW INT LBRACK expr RBRACK") {
 
-			GenCodeForExpr.generate(children(3), funcName);
+			var s = GenCodeForExpr.generate(children(3), funcName, regSet);
 			MIPSOutput.append("; gen code for new expr")
 			Utils.push(1);
 
-			val set1 = "add $1, $0, $3";
+			val set1 = "add $1, $0, $" + s;
 			MIPSOutput.append(set1);
 			val lis10 = "lis $10";
 			val newWord = ".word new"
@@ -89,11 +108,12 @@ object GenCodeForFactor {
 
 			val r = scala.util.Random;
 			val randInt = r.nextInt(1000);
-			MIPSOutput.append("bne $3, $0, newSuccess" + randInt.toString);
-			MIPSOutput.append("add $3, $11, $0");
+			MIPSOutput.append("bne $" + s+", $0, newSuccess" + randInt.toString);
+			MIPSOutput.append("add $" + s + ", $11, $0");
 			MIPSOutput.append("newSuccess" + randInt.toString + ":")
 			
 			Utils.pop(1);
+			return s;
 		}
 		else if (rule == "factor ID LPAREN RPAREN") {
 			Utils.push(29);
@@ -109,6 +129,7 @@ object GenCodeForFactor {
 			Utils.pop(31);
 
 			Utils.pop(29);
+
 
 		}
 		else if (rule == "factor ID LPAREN arglist RPAREN") {
@@ -132,5 +153,6 @@ object GenCodeForFactor {
 			Utils.pop(29);
 
 		}
+		return "3";
 	}
 }

@@ -25,7 +25,7 @@ type INT
 INT int
 ID p
 BECOMES =
-NUM 5
+NUM 10
 SEMI ;
 dcl type ID
 type INT
@@ -87,9 +87,17 @@ SEMI ;
 RBRACE }
 RETURN return
 expr term
+term term STAR factor
+term term STAR factor
 term factor
 factor ID
-ID x
+ID p
+STAR *
+factor ID
+ID p
+STAR *
+factor ID
+ID q
 SEMI ;
 RBRACE }
 EOF EOF

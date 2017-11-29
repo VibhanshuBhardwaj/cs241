@@ -15,27 +15,34 @@ object GenCodeForExpr {
 		FINALSYMTABLE = st;
 	}
 
-	def generate(expr: Node, funcName:String) : Unit = {
+	def generate(expr: Node, funcName:String, regSet: Set[String]) : String = {
 		val children = expr.children;
 		if (isConstantExpr(expr, funcName)) {
+			var r = "";
+
+			if (regSet.size == 0) r = "3"
+			else r = regSet.head;
+
 			val result = getNumExpr(expr, funcName);
 			if (result == 1) {
-				MIPSOutput.append("add $3, $0, $11");
+				MIPSOutput.append("add $" + r + ", $0, $11");
 			}
 			else if (result == 0) {
-				MIPSOutput.append("add $3, $0, $0");
+				MIPSOutput.append("add $" + r+ ", $0, $0");
 			}
 			else if (result == 4) {
-				MIPSOutput.append("add $3, $0, $4");
+				MIPSOutput.append("add $" + r + ", $0, $4");
 			}
 			else {
-				MIPSOutput.append("lis $3");
+				MIPSOutput.append("lis $" + r);
 				MIPSOutput.append(".word " + result.toString);
 			}
+			return r;
 		}
 		else if (expr.rule == "expr term") {
 			//println("for term called with " + children(0).value)
-			GenCodeForTerm.generate(children(0), funcName);
+			val r = GenCodeForTerm.generate(children(0), funcName, regSet);
+			return r;
 		}
 
 		else if (expr.rule == "expr expr PLUS term") {
@@ -44,41 +51,77 @@ object GenCodeForExpr {
 			//println("; exp2 Type is " + exp2Type + " termType is " + termType);
 			MIPSOutput.append("; expr -> expr PLUS term");
 			if (exp2Type == "int" && termType == "int") {
-				generate(children(0), funcName);
+				val s = generate(children(0), funcName, regSet);
+				if (s == "3") {
+					Utils.push(3);
 
-				Utils.push(3);
+					var t = GenCodeForTerm.generate(children(2), funcName, regSet);
+					println("; t should be 3 here. it is " + t)
 
-				GenCodeForTerm.generate(children(2), funcName);
+					Utils.pop(5);
 
-				Utils.pop(5);
-
-				var finalAddInst = "add $3, $5, $3";
-				MIPSOutput.append(finalAddInst);
+					var finalAddInst = "add $3, $5, $3";
+					MIPSOutput.append(finalAddInst);
+					return "3";
+				}
+				else {
+					var newSet = regSet - s;
+					var t = GenCodeForTerm.generate(children(2), funcName, newSet);
+					var inst = "add $" + s + ", $" + s + ", $t";
+					MIPSOutput.append(inst);
+					return s;
+				}
+				
 			}
 			else if (exp2Type == "int*" && termType == "int") {
-				generate(children(0), funcName);
+				val s = generate(children(0), funcName, regSet);
+				if (s == "3") {
+					Utils.push(3);
 
-				Utils.push(3);
+					val t= GenCodeForTerm.generate(children(2), funcName, regSet);
+					println("; t should be 3 here. it is " + t)
+					MIPSOutput.append("mult $3, $4");
+					MIPSOutput.append("mflo $3");
 
-				GenCodeForTerm.generate(children(2), funcName);
-				MIPSOutput.append("mult $3, $4");
-				MIPSOutput.append("mflo $3");
+					Utils.pop(5);
 
-				Utils.pop(5);
-
-				var finalAddInst = "add $3, $5, $3";
-				MIPSOutput.append(finalAddInst);
+					var finalAddInst = "add $3, $5, $3";
+					MIPSOutput.append(finalAddInst);
+					return "3";
+				}
+				else {
+					var newSet = regSet - s;
+					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
+					MIPSOutput.append("mult $" + t + ", $4");
+					MIPSOutput.append("mflo $" + t);
+					MIPSOutput.append("add $" + s + ", $" + s + ", $" + t);
+					return s;
+				}
 			}
 			else if (exp2Type == "int" && termType == "int*") {
-				generate(children(0), funcName);
-				MIPSOutput.append("mult $3, $4");
-				MIPSOutput.append("mflo $3");
-				Utils.push(3);
+				val s = generate(children(0), funcName, regSet);
+				if (s == "3") {
+					MIPSOutput.append("mult $3, $4");
+					MIPSOutput.append("mflo $3");
+					Utils.push(3);
 
-				GenCodeForTerm.generate(children(2), funcName);
-				Utils.pop(5);
-				var finalAddInst = "add $3, $5, $3";
-				MIPSOutput.append(finalAddInst);
+					val t = GenCodeForTerm.generate(children(2), funcName, regSet);
+					println("; t should be 3 here. it is " + t)
+					Utils.pop(5);
+					var finalAddInst = "add $3, $5, $3";
+					MIPSOutput.append(finalAddInst);
+					return "3";
+				}
+				else {
+					var newSet = regSet -s;
+					MIPSOutput.append("mult $" + s +  ", $4");
+					MIPSOutput.append("mflo $" + s);
+
+					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
+					MIPSOutput.append("add $" + s + ", $" + s + ", $" + t);
+					return s;
+
+				}
 			}
 
 		}
@@ -89,43 +132,76 @@ object GenCodeForExpr {
 			val termType = TypeChecker.checkTypes(children(2), FINALSYMTABLE, funcName);
 			if (exp2Type == "int" && termType == "int") {
 				MIPSOutput.append("; expr -> expr MINUS term")
-				generate(children(0), funcName);
+				val s = generate(children(0), funcName, regSet);
+				if (s == "3")  {
 
-				Utils.push(3)
+					Utils.push(3)
 
-				GenCodeForTerm.generate(children(2), funcName);
+					GenCodeForTerm.generate(children(2), funcName, regSet);
 
-				Utils.pop(5);
+					Utils.pop(5);
 
-				var finalAddInst = "sub $3, $5, $3";
-				MIPSOutput.append(finalAddInst);
+					var finalAddInst = "sub $3, $5, $3";
+					MIPSOutput.append(finalAddInst);
+					return "3";
+				}
+				else {
+					var newSet = regSet - s;
+					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
+					MIPSOutput.append("sub $" + s + ", $s", + "$, t");
+					return s;
+
+				}
 			}
 			else if (exp2Type == "int*" && termType == "int") {
-				generate(children(0), funcName);
+				val s = generate(children(0), funcName, regSet);
+				if (s == "3") {
 
-				Utils.push(3);
+					Utils.push(3);
 
-				GenCodeForTerm.generate(children(2), funcName);
-				MIPSOutput.append("mult $3, $4");
-				MIPSOutput.append("mflo $3");
+					GenCodeForTerm.generate(children(2), funcName, regSet);
+					MIPSOutput.append("mult $3, $4");
+					MIPSOutput.append("mflo $3");
 
-				Utils.pop(5);
-				var finalAddInst = "sub $3, $5, $3";
-				MIPSOutput.append(finalAddInst);
+					Utils.pop(5);
+					var finalAddInst = "sub $3, $5, $3";
+					MIPSOutput.append(finalAddInst);
+					return "3"
+				}
+				else { 
+					var newSet = regSet - s;
+					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
+					MIPSOutput.append("mult $" + t + ", $4");
+					MIPSOutput.append("mflo $" + t);
+					MIPSOutput.append("sub $" + s + ", $" + s + ", $" + t);
+					return s;
+
+				}
 			}
 			else if (exp2Type == "int*" && termType == "int*") {
 				
-				generate(children(0), funcName);
+				val s = generate(children(0), funcName, regSet);
+				if (s == "3") {
 
-				Utils.push(3)
+					Utils.push(3)
 
-				GenCodeForTerm.generate(children(2), funcName);
+					GenCodeForTerm.generate(children(2), funcName, regSet);
 
-				Utils.pop(5);
-				var finalAddInst = "sub $3, $5, $3";
-				MIPSOutput.append(finalAddInst);
-				MIPSOutput.append("div $3, $4");
-				MIPSOutput.append("mflo $3");
+					Utils.pop(5);
+					var finalAddInst = "sub $3, $5, $3";
+					MIPSOutput.append(finalAddInst);
+					MIPSOutput.append("div $3, $4");
+					MIPSOutput.append("mflo $3");
+					return "3"
+				}
+				else {
+					val newSet = regSet - s;
+					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
+					MIPSOutput.append("sub $" + s +", $" + s + ", $" + t);
+					MIPSOutput.append("div $" + s + ", $4");
+					MIPSOutput.append("mflor $" + s);
+					return s;
+				}
 			}
 		}
 	}

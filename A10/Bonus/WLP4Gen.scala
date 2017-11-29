@@ -56,8 +56,9 @@ object WLP4Gen {
 		val rule = tree.rule;
 		if (rule == "factor ID") {
 			val lex = children(0).lex;
-			if (varsUsed(funcName) contains lex) { 
-				val fullName = funcName + " " + lex;
+			val fullName = funcName + " " + lex;
+			if ( (varsUsed(funcName) contains lex) && !(constMapping contains fullName)) { //FLAG 
+				
 				if (unAddressedUsedVars contains fullName) {unAddressedUsedVars(fullName) = unAddressedUsedVars(fullName) + 1;}
 				else {
 					unAddressedUsedVars += (fullName -> 1);
@@ -212,6 +213,7 @@ object WLP4Gen {
 			//println("; lvalue rule" + lvalue.rule);
 			if (!lvalue.rule.contains("STAR")) {
 				val lex = getLexLvalue(children(0));
+				//check if it's mapped to a register.
 				if (  !opt || (varsUsed(name) contains lex) || (doesExpHaveFuncCall(expr))) {
 					//println("; generating code for "  + lex)
 					GenCodeForExpr.generate(expr, name);
@@ -579,18 +581,10 @@ object WLP4Gen {
 				populateUsedVarsInExpr(expr, funcName);
 				val ifstmts = stmt.children(5);
 				val elsestmts = stmt.children(9);
-				//addAllVars(expr, funcName);
-				//addAllVars(ifstmts, fun)
-				// println("; happening with if else before");
-				// for (x<- varsUsed(funcName)) {
-				// 	println(";inside" + x);
-				// }
+
 				populateUsedVarsInStmts(elsestmts, funcName);
 				populateUsedVarsInStmts(ifstmts, funcName);
-				// println("; happening with if else AFTER");
-				// for (x<- varsUsed(funcName)) {
-				// 	println(";outside" + x);
-				// }
+
 				
 			}
 			else if (stmt.rule.contains("WHILE")) {
@@ -603,7 +597,7 @@ object WLP4Gen {
 				val lex = getLexLvalue(stmt.children(0));
 				val expr = stmt.children(2);
 				if ((varsUsed(funcName) contains lex) ||doesLvalueHaveStar(stmt.children(0))) {
-//					println("; populating lvalue's children " + lex);
+
 					populateUsedVarsInExpr(expr, funcName);
 				}
 
@@ -660,7 +654,9 @@ object WLP4Gen {
 				val lval_lex = getLexLvalue(s.children(0));
 				val fullName = funcName + " "  + lval_lex;
 			//	println("; removing from constMapping " + fullName);
+				val expr = s.children(2);	
 				constMapping = constMapping - fullName;
+				
 			}
 			else if (s.rule.contains("WHILE")) removeFromConsts(s.children(5), funcName);
 			else if (s.rule.contains("IF")) {
@@ -701,12 +697,12 @@ object WLP4Gen {
 
 	
 
-	def getMostUsedVars() {
+	def getMostUsedVars(howManyMostUsed: Int) {
 		val sorted = unAddressedUsedVars.toSeq.sortBy(x => x._2.toInt).reverse;
 		println("; ordered by usage ");
 		var rCount = 0;
 		for (c<- sorted) {
-			if (rCount < 20) { 
+			if (rCount < howManyMostUsed) { 
 				if (c._2 > 0) {
 					MappingToRegisters = MappingToRegisters + (c._1 -> availableRegisters(rCount));
 					rCount = rCount + 1;
@@ -728,22 +724,22 @@ object WLP4Gen {
 		val procedures = ParseTree.children(1);
 
 		populateFunctionsUsedProcedures(procedures);
-		
-		for (x <- functionsUsed) {
-			
-			//varsUsed = varsUsed + (x -> empty)
-		}
-		//varsUsed = varsUsed + ("wain" -> empty)
 
 		findUsedVars(procedures);
-		//populateVarCountsProcedures(procedures);
-		
-		//getMostUsedVars();
+
 		identifyConsts(procedures);
-		for ((k, v)<- constMapping) {
+		getMostUsedVars(10); //10 most used non constant variables
+		var actuallyUsed = MappingToRegisters.size;
+		var setOfAvailRegs = availableRegisters.slice(actuallyUsed, availableRegisters.length).toSet;
+
+		for ((k, v)<- MappingToRegisters) {
 			println(";function var " + k);
-			println("; const value " + v);
+			println("; mapped to " + v);
 		}
+		for (r<- setOfAvailRegs) {
+			println(";available: " + r)
+		}
+
 		GenCodeForFactor.init(MappingToRegisters);
 		signatureMap = SymbolTableBuilder.getSignatureMap();
 		TypeChecker.setup(signatureMap, signatureMap, FINALSYMTABLE)
