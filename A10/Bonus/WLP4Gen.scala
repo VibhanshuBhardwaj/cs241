@@ -219,13 +219,23 @@ object WLP4Gen {
 					val r = GenCodeForExpr.generate(expr, name, registersAvailableToExpr);
 					
 					//println("lex is "  + lex)
-					val offset = getValOfLexFromSymTable(lex, name).split(" ")(1);
-					//println("offset is " + offset)
-					if (offset == "0") inst+= "sw $" + r +", "
-					else inst+= "sw $" + r + ", -"
-					inst+= offset.toString;
-					inst+="($29)"
-					MIPSOutput.append(inst);
+					val fullName = name + " " + lex;
+					if (MappingToRegisters contains fullName) {
+						println("; mapping exists for " + fullName)
+						val t = MappingToRegisters(fullName);
+						println(" and it's mapped to " + t);
+						MIPSOutput.append("add $" + t + ", $" + r + ", $0");
+					}
+					else { 
+						println("; variable  + " + fullName + " is NOT mapped to a register")
+						val offset = getValOfLexFromSymTable(lex, name).split(" ")(1);
+						//println("offset is " + offset)
+						if (offset == "0") inst+= "sw $" + r +", "
+						else inst+= "sw $" + r + ", -"
+						inst+= offset.toString;
+						inst+="($29)"
+						MIPSOutput.append(inst);
+					}
 				}
 				else {
 					println("; not generating code for " + lex)
@@ -537,6 +547,10 @@ object WLP4Gen {
 		//	println("; varlex " + varlex)
 			varsUsed(funcName) += varlex;
 		}
+		else if (expr.rule == "factor AMP lvalue") {
+			var varlex = getLexLvalue(children(1));
+			varsUsed(funcName) += varlex;
+		}
 		else {
 			for (c<- children) {
 				populateUsedVarsInExpr(c, funcName);
@@ -740,6 +754,9 @@ object WLP4Gen {
 		}
 		for (r<- registersAvailableToExpr) {
 			println(";available: " + r)
+		}
+		for ((k, v) <- constMapping) {
+			println(" const " + k  + " " + v);
 		}
 
 		GenCodeForFactor.init(MappingToRegisters);
