@@ -18,6 +18,14 @@
 ;available: 27
 ;available: 18
 ;available: 28
+
+;rule : lvalue ID
+; lvalue ID 
+
+; normal code gen has star 
+;rule : lvalue STAR factor
+;r: 8
+; t 8
 .import print
 .import init
 .import delete
@@ -32,7 +40,7 @@ Fwain:
 sub $29, $30, $4
 add $28, $31, $0
 lis $12
-.word 8
+.word 12
 sub $30, $30, $12
 sw $1, 0($29)
 sw $2, -4($29)
@@ -42,17 +50,27 @@ sub $30, $30, $4
 ; init
 lis $10
 .word init
-sw $2, -4($30)
-sub $30, $30, $4
-add $2, $0, $0
 jalr $10
-add $30, $30, $4
-lw $2, -4($30)
-; term -> term SLASH factor code starts
+add $3, $0, $11
+sw $3, -8($29)
+lis $3
+.word -4
+add $3, $3, $29
+sw $3, -8($29)
+; term -> term STAR factor code starts
+; pointers! factor -> STAR factor
 lw $12, 0($29)
-lw $8, -4($29)
-div $12, $8
+lw $12, 0($12)
+lis $8
+.word 7
+mult $12, $8
 mflo $12
+; de-ref a pointer and assign to it
+lw $8, -8($29)
+sw $12, 0($8)
+; pointers! factor -> STAR factor
+lw $12, -8($29)
+lw $12, 0($12)
 add $3, $0, $12
 add $30, $30, $4
 lw $31, -4($30)

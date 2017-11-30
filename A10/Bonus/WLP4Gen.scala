@@ -204,7 +204,7 @@ object WLP4Gen {
 			return nWhile;
 		}
 		else if (stmt.rule == "statement lvalue BECOMES expr SEMI") {
-			
+			println("")
 			val expr = children(2);
 			val lvalue = children(0);
 			
@@ -236,12 +236,14 @@ object WLP4Gen {
 				val r = GenCodeForExpr.generate(expr, name, registersAvailableToExpr);
 				MIPSOutput.append("; de-ref a pointer and assign to it")
 				//Utils.push(r.toInt);
-
-				generateCodeForLvalue(children(0), name);
+				var t = "blah"
+				var newSet = registersAvailableToExpr - r;
+				t = generateCodeForLvalue(children(0), name, newSet);
 
 				//Utils.pop(r.toInt);
+				println("; t " + t)
 
-				val storeDereferencedVal = "sw $" + r + ", 0($3)"
+				val storeDereferencedVal = "sw $" + r + ", 0($" + t + ")"
 				MIPSOutput.append(storeDereferencedVal);
 
 			}
@@ -279,9 +281,9 @@ object WLP4Gen {
 		else return nWhile;
 	}
 
-	def generateCodeForLvalue(lvalue: Node, funcName: String) : Unit = {
+	def generateCodeForLvalue(lvalue: Node, funcName: String, regSet: Set[String]) : String = {
 
-		GenCodeForLvalue.generate(lvalue, funcName, registersAvailableToExpr);
+		 return GenCodeForLvalue.generate(lvalue, funcName, regSet);
 	}
 
 	def generateCodeForIF(stmt: Node, nLabels: Int, funcName: String, opt: Boolean) : Int = {

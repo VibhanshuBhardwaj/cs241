@@ -6,8 +6,9 @@ INT int
 WAIN wain
 LPAREN (
 dcl type ID
-type INT
+type INT STAR
 INT int
+STAR *
 ID a
 COMMA ,
 dcl type ID
@@ -16,17 +17,54 @@ INT int
 ID b
 RPAREN )
 LBRACE {
+dcls dcls dcl BECOMES NULL SEMI
 dcls
+dcl type ID
+type INT STAR
+INT int
+STAR *
+ID d
+BECOMES =
+NULL NULL
+SEMI ;
+statements statements statement
+statements statements statement
 statements
-RETURN return
+statement lvalue BECOMES expr SEMI
+lvalue ID
+ID d
+BECOMES =
 expr term
-term term SLASH factor
 term factor
+factor AMP lvalue
+AMP &
+lvalue ID
+ID b
+SEMI ;
+statement lvalue BECOMES expr SEMI
+lvalue STAR factor
+STAR *
+factor ID
+ID d
+BECOMES =
+expr term
+term term STAR factor
+term factor
+factor STAR factor
+STAR *
 factor ID
 ID a
-SLASH /
+STAR *
+factor NUM
+NUM 7
+SEMI ;
+RETURN return
+expr term
+term factor
+factor STAR factor
+STAR *
 factor ID
-ID b
+ID d
 SEMI ;
 RBRACE }
 EOF EOF

@@ -10,7 +10,9 @@ object GenCodeForLvalue {
 		//ie. factor -> AMP lvalue;
 		val children = lvalue.children;
 		val rule = lvalue.rule;
+		println(";rule : " + rule)
 		if (rule == "lvalue ID") {
+			println("; lvalue ID ")
 			val lex = children(0).lex;
 			val offset = Utils.getValOfLexFromSymTable(lex, funcName).split(" ")(1);
 			val lis3 = "lis $3"
@@ -27,14 +29,20 @@ object GenCodeForLvalue {
 			MIPSOutput.append(dotWordOffset);
 			val storeAddress = "add $3, $3, $29";
 			MIPSOutput.append(storeAddress);
+			return "3";
 			
 		}
 		else if (rule == "lvalue STAR factor") {
-			GenCodeForFactor.generate(children(1), funcName, regSet);
+			val r = GenCodeForFactor.generate(children(1), funcName, regSet);
+			println(";r: " + r);
+			return r;
 		}
 		else if (rule == "lvalue LPAREN lvalue RPAREN") {
-			generate(children(1), funcName, regSet);
+			return generate(children(1), funcName, regSet);
 		}
-		return "3";
+		else {
+			println("; returning 3")
+			return "3";
+		}
 	}
 }

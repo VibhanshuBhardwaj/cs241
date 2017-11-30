@@ -53,10 +53,10 @@ object GenCodeForFactor {
 		}
 		else if (rule =="factor STAR factor") {
 			MIPSOutput.append("; pointers! factor -> STAR factor")
-			generate(children(1), funcName, regSet);
-			val takeAddress = "lw $3, 0($3)";
+			val r = generate(children(1), funcName, regSet);
+			val takeAddress = "lw $" + r +", 0($" + r + ")";
 			MIPSOutput.append(takeAddress);
-			return "3"
+			return r;
 		}
 		else if (rule == "factor AMP lvalue") {
 			GenCodeForLvalue.generate(children(1), funcName, regSet);
