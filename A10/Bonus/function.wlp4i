@@ -17,6 +17,8 @@ INT int
 ID b
 RPAREN )
 LBRACE {
+dcls dcls dcl BECOMES NUM SEMI
+dcls dcls dcl BECOMES NULL SEMI
 dcls dcls dcl BECOMES NULL SEMI
 dcls
 dcl type ID
@@ -27,18 +29,21 @@ ID c
 BECOMES =
 NULL NULL
 SEMI ;
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
-statements statements statement
+dcl type ID
+type INT STAR
+INT int
+STAR *
+ID d
+BECOMES =
+NULL NULL
+SEMI ;
+dcl type ID
+type INT
+INT int
+ID e
+BECOMES =
+NUM 0
+SEMI ;
 statements statements statement
 statements statements statement
 statements
@@ -53,547 +58,42 @@ factor ID
 ID a
 PLUS +
 term factor
-factor NUM
-NUM 1
-SEMI ;
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr LT expr
-expr term
-term factor
 factor ID
-ID a
-LT <
-expr term
-term factor
-factor ID
-ID c
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
+ID b
 SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
+statement lvalue BECOMES expr SEMI
+lvalue ID
+ID d
+BECOMES =
 expr term
 term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
+factor AMP lvalue
+AMP &
+lvalue STAR factor
+STAR *
+factor LPAREN expr RPAREN
 LPAREN (
-test expr GT expr
-expr term
-term factor
-factor ID
-ID a
-GT >
+expr expr MINUS term
 expr term
 term factor
 factor ID
 ID c
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
+MINUS -
 term factor
 factor NUM
 NUM 1
 RPAREN )
 SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr LT expr
-expr term
-term factor
-factor ID
-ID c
-LT <
-expr term
-term factor
-factor ID
-ID a
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr LE expr
-expr term
-term factor
-factor ID
-ID a
-LE <=
-expr term
-term factor
-factor ID
-ID c
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr GE expr
-expr term
-term factor
-factor ID
-ID a
-GE >=
-expr term
-term factor
-factor ID
-ID c
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr LE expr
-expr term
-term factor
-factor ID
-ID c
-LE <=
-expr term
-term factor
-factor ID
-ID a
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr GE expr
-expr term
-term factor
-factor ID
-ID c
-GE >=
-expr term
-term factor
-factor ID
-ID a
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr EQ expr
-expr term
-term factor
-factor ID
-ID a
-EQ ==
-expr term
-term factor
-factor ID
-ID a
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr NE expr
-expr term
-term factor
-factor ID
-ID c
-NE !=
-expr term
-term factor
-factor ID
-ID c
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr EQ expr
-expr term
-term factor
-factor ID
-ID a
-EQ ==
-expr term
-term factor
-factor ID
-ID c
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr NE expr
-expr term
-term factor
-factor ID
-ID a
-NE !=
-expr term
-term factor
-factor ID
-ID c
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr LE expr
-expr term
-term factor
-factor ID
-ID a
-LE <=
-expr term
-term factor
-factor ID
-ID a
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
-statement IF LPAREN test RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-IF if
-LPAREN (
-test expr GE expr
-expr term
-term factor
-factor ID
-ID c
-GE >=
-expr term
-term factor
-factor ID
-ID c
-RPAREN )
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 1
-RPAREN )
-SEMI ;
-RBRACE }
-ELSE else
-LBRACE {
-statements statements statement
-statements
-statement PRINTLN LPAREN expr RPAREN SEMI
-PRINTLN println
-LPAREN (
-expr term
-term factor
-factor NUM
-NUM 0
-RPAREN )
-SEMI ;
-RBRACE }
 RETURN return
+expr expr MINUS term
 expr term
 term factor
-factor NUM
-NUM 0
+factor ID
+ID d
+MINUS -
+term factor
+factor ID
+ID a
 SEMI ;
 RBRACE }
 EOF EOF

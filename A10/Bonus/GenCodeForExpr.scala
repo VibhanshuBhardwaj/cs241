@@ -40,8 +40,9 @@ object GenCodeForExpr {
 			return r;
 		}
 		else if (expr.rule == "expr term") {
-			//println("for term called with " + children(0).value)
+			MIPSOutput.append(";in expr -> term ")
 			val r = GenCodeForTerm.generate(children(0), funcName, regSet);
+			MIPSOutput.append("; expr -> term in r " + r)
 			return r;
 		}
 
@@ -155,6 +156,7 @@ object GenCodeForExpr {
 			}
 			else if (exp2Type == "int*" && termType == "int") {
 				val s = generate(children(0), funcName, regSet);
+				MIPSOutput.append(";s is " + s);
 				if (s == "3") {
 
 					Utils.push(3);
@@ -169,8 +171,10 @@ object GenCodeForExpr {
 					return "3"
 				}
 				else { 
+					MIPSOutput.append("; ptr - int!")
 					var newSet = regSet - s;
 					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
+					MIPSOutput.append("; t is " + t)
 					MIPSOutput.append("mult $" + t + ", $4");
 					MIPSOutput.append("mflo $" + t);
 					MIPSOutput.append("sub $" + s + ", $" + s + ", $" + t);
@@ -179,8 +183,9 @@ object GenCodeForExpr {
 				}
 			}
 			else if (exp2Type == "int*" && termType == "int*") {
-				
+				MIPSOutput.append("; ptr subtraction!")
 				val s = generate(children(0), funcName, regSet);
+				MIPSOutput.append("; s is " + s);
 				if (s == "3") {
 
 					Utils.push(3)
@@ -197,6 +202,7 @@ object GenCodeForExpr {
 				else {
 					val newSet = regSet - s;
 					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
+					MIPSOutput.append("; t is " + t)
 					MIPSOutput.append("sub $" + s +", $" + s + ", $" + t);
 					MIPSOutput.append("div $" + s + ", $4");
 					MIPSOutput.append("mflo $" + s);

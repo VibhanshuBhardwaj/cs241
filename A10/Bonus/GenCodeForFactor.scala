@@ -59,8 +59,8 @@ object GenCodeForFactor {
 			return r;
 		}
 		else if (rule == "factor AMP lvalue") {
-			GenCodeForLvalue.generate(children(1), funcName, regSet);
-			return "3"
+			return GenCodeForLvalue.generate(children(1), funcName, regSet);
+			//return "3"
 		}
 		else if (rule == "factor ID") {
 			val id = children(0);

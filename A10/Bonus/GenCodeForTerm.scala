@@ -33,7 +33,9 @@ object GenCodeForTerm {
 		}
 		else if (rule == "term factor") {
 			//println("for factor called with " + children(0).value)
-			return GenCodeForFactor.generate(children(0), funcName, regSet);
+			val r = GenCodeForFactor.generate(children(0), funcName, regSet);
+			MIPSOutput.append("; term -> factor r " + r);
+			return r;
 		}
 		else if (rule == "term term STAR factor") {
 			MIPSOutput.append("; term -> term STAR factor code starts");
