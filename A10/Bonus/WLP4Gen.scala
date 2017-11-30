@@ -33,6 +33,7 @@ object WLP4Gen {
 	var MappingToRegisters = Map[String, String]();
 	
 	var constMapping = Map[String, String]();
+	var registersAvailableToExpr = Set[String]();
 
 	def populateVarCountsProcedures(procedures: Node) {
 		val children = procedures.children;
@@ -186,11 +187,10 @@ object WLP4Gen {
 		val children = stmt.children;
 		if (stmt.rule.contains("PRINTLN")) {
 
-			GenCodeForExpr.generate(children(2), name);
+			val r = GenCodeForExpr.generate(children(2), name, registersAvailableToExpr);
+
 			Utils.push(1);
-
-
-			val copyTo1 = "add $1, $3, $0";
+			val copyTo1 = "add $1, $" + r +", $0";
 			MIPSOutput.append(copyTo1);
 			val lis10 = "lis $10";
 			val printWord = ".word print"
@@ -216,13 +216,13 @@ object WLP4Gen {
 				//check if it's mapped to a register.
 				if (  !opt || (varsUsed(name) contains lex) || (doesExpHaveFuncCall(expr))) {
 					//println("; generating code for "  + lex)
-					GenCodeForExpr.generate(expr, name);
+					val r = GenCodeForExpr.generate(expr, name, registersAvailableToExpr);
 					
 					//println("lex is "  + lex)
 					val offset = getValOfLexFromSymTable(lex, name).split(" ")(1);
 					//println("offset is " + offset)
-					if (offset == "0") inst+= "sw $3, "
-					else inst+= "sw $3, -"
+					if (offset == "0") inst+= "sw $" + r +", "
+					else inst+= "sw $" + r + ", -"
 					inst+= offset.toString;
 					inst+="($29)"
 					MIPSOutput.append(inst);
@@ -233,9 +233,10 @@ object WLP4Gen {
 			}
 			else {
 				println("; normal code gen has star ")
-				GenCodeForExpr.generate(expr, name);
+				val r = GenCodeForExpr.generate(expr, name, registersAvailableToExpr);
 				MIPSOutput.append("; de-ref a pointer and assign to it")
-				Utils.push(3);
+				Utils.push(r.toInt);
+
 				generateCodeForLvalue(children(0), name);
 
 				Utils.pop(5);
@@ -456,7 +457,7 @@ object WLP4Gen {
 		generateCodeForDCLs(dcls, "wain");
 		numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, "wain", true);
 		GenCodeForExpr.generate(expr, "wain");
-		
+		//add to reg 3.
 		MIPSOutput.addEpilog(size*4, "wain");
 	}
 
@@ -730,7 +731,7 @@ object WLP4Gen {
 		identifyConsts(procedures);
 		getMostUsedVars(10); //10 most used non constant variables
 		var actuallyUsed = MappingToRegisters.size;
-		var setOfAvailRegs = availableRegisters.slice(actuallyUsed, availableRegisters.length).toSet;
+		registersAvailableToExpr = availableRegisters.slice(actuallyUsed, availableRegisters.length).toSet;
 
 		for ((k, v)<- MappingToRegisters) {
 			println(";function var " + k);

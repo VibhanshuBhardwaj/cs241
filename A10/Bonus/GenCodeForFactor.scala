@@ -15,19 +15,19 @@ object GenCodeForFactor {
 	def init(mp: Map[String, String]) {
 		MappingToRegisters =mp;
 	}
-	def processArglist(arglist: Node, funcName: String) {
+	def processArglist(arglist: Node, funcName: String, regSet: Set[String]) {
 		MIPSOutput.append("; processing ")
 		val children = arglist.children;
 		//println("arglist.rule " + arglist.rule + " children len " + children.length)
 		if (arglist.rule == "arglist expr") {
 
-			GenCodeForExpr.generate(children(0), funcName);
+			GenCodeForExpr.generate(children(0), funcName, regSet);
 			Utils.push(3)
 		}
 		else {
-			GenCodeForExpr.generate(children(0), funcName);
+			GenCodeForExpr.generate(children(0), funcName, regSet);
 			Utils.push(3);
-			processArglist(children(2), funcName);
+			processArglist(children(2), funcName, regSet);
 		}
 	}
 	def generate(factor: Node, funcName: String, regSet: Set[String]) : String = {
@@ -59,7 +59,7 @@ object GenCodeForFactor {
 			return "3"
 		}
 		else if (rule == "factor AMP lvalue") {
-			GenCodeForLvalue.generate(children(1), funcName);
+			GenCodeForLvalue.generate(children(1), funcName, regSet);
 			return "3"
 		}
 		else if (rule == "factor ID") {
@@ -142,7 +142,7 @@ object GenCodeForFactor {
 
 			MIPSOutput.append("add $21, $30, $0")
 			
-			processArglist(children(2), funcName);
+			processArglist(children(2), funcName, regSet);
 			MIPSOutput.append("sub $29, $21, $4"); // HERE
 			MIPSOutput.append("add $30, $21, $0"); //REMOVE THIS MAYBE?
 			MIPSOutput.append("lis $10");

@@ -14,14 +14,23 @@ object GenCodeForTest {
 		FINALSYMTABLE = st;
 	}
 
-	def generate(test: Node, funName: String) : Unit = {
+	def generate(test: Node, funName: String, regset: Set[String]) : Unit = {
 		val children = test.children;
 		val exp1 = children(0);
 		val exp2 = children(2);
-		GenCodeForExpr.generate(exp1, funName);
-		Utils.push(3);
-		GenCodeForExpr.generate(exp2, funName);
-		Utils.pop(5);
+		val exp1Reg= GenCodeForExpr.generate(exp1, funName, regset);
+		if (exp1Reg=="3") {
+			Utils.push(3);
+			val exp2Reg = GenCodeForExpr.generate(exp2, funName, regset);
+			Utils.pop(5);
+		}
+		else {
+			val newSet = regset - exp1Reg;
+			val exp2Reg = GenCodeForExpr.generate(exp2, funName, newSet);
+			MIPSOutput.append("add $5, $" + exp1Reg + ", $0");
+			MIPSOutput.append("add $3, $" + exp2Reg + ", $0");
+		}
+		
 
 		val exp1Type = TypeChecker.checkTypes(exp1, FINALSYMTABLE, funName);
 		val exp2Type = TypeChecker.checkTypes(exp2, FINALSYMTABLE, funName);

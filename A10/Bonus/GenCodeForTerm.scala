@@ -47,8 +47,9 @@ object GenCodeForTerm {
 				val multiplyThem = "mult $3, $5";
 				val mflo = "mflo $3";
 				MIPSOutput.append(multiplyThem);
-				MIPSOutput.append(mflo) 
-				MIPSOutput.append("; term -> term STAR factor code ends")
+				MIPSOutput.append(mflo);
+				MIPSOutput.append("; term -> term STAR factor code ends");
+				return "3";
 			}
 			else {
 				var newSet = regSet - s;
@@ -109,5 +110,6 @@ object GenCodeForTerm {
 			}
 
 		}
+		return "3";
 	}
 }

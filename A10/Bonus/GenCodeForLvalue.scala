@@ -5,7 +5,7 @@ import GenCodeForFactor._;
 import Utils._
 
 object GenCodeForLvalue {
-	def generate(lvalue: Node, funcName: String) : Unit = {
+	def generate(lvalue: Node, funcName: String, regSet: Set[String]) : Unit = {
 		//should only be called from inside generateCodeForFactor or recursively
 		//ie. factor -> AMP lvalue;
 		val children = lvalue.children;
@@ -30,10 +30,10 @@ object GenCodeForLvalue {
 			
 		}
 		else if (rule == "lvalue STAR factor") {
-			GenCodeForFactor.generate(children(1), funcName);
+			GenCodeForFactor.generate(children(1), funcName, regSet);
 		}
 		else if (rule == "lvalue LPAREN lvalue RPAREN") {
-			generate(children(1), funcName);
+			generate(children(1), funcName, regSet);
 		}
 	}
 }

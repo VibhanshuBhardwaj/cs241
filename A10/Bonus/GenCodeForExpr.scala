@@ -148,7 +148,7 @@ object GenCodeForExpr {
 				else {
 					var newSet = regSet - s;
 					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
-					MIPSOutput.append("sub $" + s + ", $s", + "$, t");
+					MIPSOutput.append("sub $" + s + ", $" + s + ", $" + t);
 					return s;
 
 				}
@@ -204,5 +204,6 @@ object GenCodeForExpr {
 				}
 			}
 		}
+		return "3";
 	}
 }
