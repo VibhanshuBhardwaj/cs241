@@ -149,7 +149,7 @@ object WLP4Gen {
 	}
 
 	def generateCodeForTest(test: Node, funcName: String) : Unit = {
-		GenCodeForTest.generate(test, funcName);
+		GenCodeForTest.generate(test, funcName, registersAvailableToExpr);
 	}
 
 	def getLexFactor(factor: Node) : String = {
@@ -235,13 +235,13 @@ object WLP4Gen {
 				println("; normal code gen has star ")
 				val r = GenCodeForExpr.generate(expr, name, registersAvailableToExpr);
 				MIPSOutput.append("; de-ref a pointer and assign to it")
-				Utils.push(r.toInt);
+				//Utils.push(r.toInt);
 
 				generateCodeForLvalue(children(0), name);
 
-				Utils.pop(5);
+				//Utils.pop(r.toInt);
 
-				val storeDereferencedVal = "sw $5, 0($3)"
+				val storeDereferencedVal = "sw $" + r + ", 0($3)"
 				MIPSOutput.append(storeDereferencedVal);
 
 			}
@@ -257,7 +257,7 @@ object WLP4Gen {
 		}
 		else if (stmt.rule.contains("DELETE")) {
 			MIPSOutput.append("; generating statement -> DELETE");
-			GenCodeForExpr.generate(children(3), name);
+			GenCodeForExpr.generate(children(3), name, registersAvailableToExpr);
 			MIPSOutput.append("beq $3, $11, skipDeleteBitch" + nWhile)
 			
 			Utils.push(1);
@@ -281,7 +281,7 @@ object WLP4Gen {
 
 	def generateCodeForLvalue(lvalue: Node, funcName: String) : Unit = {
 
-		GenCodeForLvalue.generate(lvalue, funcName);
+		GenCodeForLvalue.generate(lvalue, funcName, registersAvailableToExpr);
 	}
 
 	def generateCodeForIF(stmt: Node, nLabels: Int, funcName: String, opt: Boolean) : Int = {
@@ -456,8 +456,8 @@ object WLP4Gen {
 
 		generateCodeForDCLs(dcls, "wain");
 		numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, "wain", true);
-		GenCodeForExpr.generate(expr, "wain");
-		//add to reg 3.
+		val r = GenCodeForExpr.generate(expr, "wain", registersAvailableToExpr);
+		MIPSOutput.append("add $3, $0, $" + r);
 		MIPSOutput.addEpilog(size*4, "wain");
 	}
 
@@ -481,7 +481,7 @@ object WLP4Gen {
 
 			generateCodeForDCLs(dcls, name);
 			numberOfWhiles = numberOfWhiles + generateCodeForStatements(stmts, numberOfWhiles, name, true);
-			GenCodeForExpr.generate(expr, name);
+			GenCodeForExpr.generate(expr, name, registersAvailableToExpr);
 			MIPSOutput.addEpilog(size*4, name)
 		}
 	}
@@ -700,7 +700,6 @@ object WLP4Gen {
 
 	def getMostUsedVars(howManyMostUsed: Int) {
 		val sorted = unAddressedUsedVars.toSeq.sortBy(x => x._2.toInt).reverse;
-		println("; ordered by usage ");
 		var rCount = 0;
 		for (c<- sorted) {
 			if (rCount < howManyMostUsed) { 
@@ -737,7 +736,7 @@ object WLP4Gen {
 			println(";function var " + k);
 			println("; mapped to " + v);
 		}
-		for (r<- setOfAvailRegs) {
+		for (r<- registersAvailableToExpr) {
 			println(";available: " + r)
 		}
 

@@ -80,7 +80,7 @@ object GenCodeForTerm {
 				var newSet = regSet - s;
 				val t = GenCodeForFactor.generate(children(2), funcName, newSet);
 				MIPSOutput.append("div $" + s+ ", $" + t);
-				MIPSOutput.append("mflo $ " + s);
+				MIPSOutput.append("mflo $" + s);
 				return s;
 			}
 		}

@@ -67,20 +67,21 @@ object GenCodeForFactor {
 			val lex = id.lex;
 			var r = "";
 			val fullName = funcName + " " + lex;
-			if (regSet.size == 0) r = "3"
-			else r = regSet.head;
-			if (MappingToRegisters contains fullName) r = MappingToRegisters(fullName);
-			if (r == "3") {
+
+			if (MappingToRegisters contains fullName) {
+				r = MappingToRegisters(fullName);
+				return r;
+			}
+			else {
+				if (regSet.size == 0) r = "3"
+				else r = regSet.head;
 				var offset = Utils.getValOfLexFromSymTable(lex, funcName).split(" ")(1);
 				var inst ="";
-				if (offset == "0") inst+= "lw $3, "
-				else inst+= "lw $3, -"
+				if (offset == "0") inst+= "lw $" + r + ", "
+				else inst+= "lw $" + r + ", -"
 				inst+= offset.toString;
 				inst+="($29)"
 				MIPSOutput.append(inst);
-				return "3";
-			}
-			else {
 				return r;
 			}
 		}

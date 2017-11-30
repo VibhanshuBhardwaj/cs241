@@ -67,7 +67,7 @@ object GenCodeForExpr {
 				else {
 					var newSet = regSet - s;
 					var t = GenCodeForTerm.generate(children(2), funcName, newSet);
-					var inst = "add $" + s + ", $" + s + ", $t";
+					var inst = "add $" + s + ", $" + s + ", $" + t;
 					MIPSOutput.append(inst);
 					return s;
 				}
