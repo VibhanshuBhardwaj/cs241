@@ -199,7 +199,7 @@ object GenCodeForExpr {
 					val t = GenCodeForTerm.generate(children(2), funcName, newSet);
 					MIPSOutput.append("sub $" + s +", $" + s + ", $" + t);
 					MIPSOutput.append("div $" + s + ", $4");
-					MIPSOutput.append("mflor $" + s);
+					MIPSOutput.append("mflo $" + s);
 					return s;
 				}
 			}

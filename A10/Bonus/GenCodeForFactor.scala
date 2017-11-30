@@ -109,9 +109,10 @@ object GenCodeForFactor {
 
 			val r = scala.util.Random;
 			val randInt = r.nextInt(1000);
-			MIPSOutput.append("bne $" + s+", $0, newSuccess" + randInt.toString);
-			MIPSOutput.append("add $" + s + ", $11, $0");
+			MIPSOutput.append("bne $3, $0, newSuccess" + randInt.toString);
+			MIPSOutput.append("add $3, $11, $0");
 			MIPSOutput.append("newSuccess" + randInt.toString + ":")
+			MIPSOutput.append("add $" + s + ", $0, $3")
 			
 			Utils.pop(1);
 			return s;

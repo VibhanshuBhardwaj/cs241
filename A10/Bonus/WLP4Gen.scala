@@ -547,10 +547,6 @@ object WLP4Gen {
 		//	println("; varlex " + varlex)
 			varsUsed(funcName) += varlex;
 		}
-		else if (expr.rule == "factor AMP lvalue") {
-			var varlex = getLexLvalue(children(1));
-			varsUsed(funcName) += varlex;
-		}
 		else {
 			for (c<- children) {
 				populateUsedVarsInExpr(c, funcName);
@@ -747,7 +743,7 @@ object WLP4Gen {
 		getMostUsedVars(10); //10 most used non constant variables
 		var actuallyUsed = MappingToRegisters.size;
 		registersAvailableToExpr = availableRegisters.slice(actuallyUsed, availableRegisters.length).toSet;
-
+		println(";MappingToRegisters " + MappingToRegisters.size)
 		for ((k, v)<- MappingToRegisters) {
 			println(";function var " + k);
 			println("; mapped to " + v);
@@ -756,7 +752,7 @@ object WLP4Gen {
 			println(";available: " + r)
 		}
 		for ((k, v) <- constMapping) {
-			println(" const " + k  + " " + v);
+			println("; const " + k  + " " + v);
 		}
 
 		GenCodeForFactor.init(MappingToRegisters);
