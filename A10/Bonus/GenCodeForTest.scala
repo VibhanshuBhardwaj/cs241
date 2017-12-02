@@ -8,21 +8,23 @@ import scala.collection.mutable.ArrayBuffer;
 import scala.collection.mutable.Map;
 
 object GenCodeForTest {
+	val emptySet  = Set[String]();
 	var FINALSYMTABLE =  ArrayBuffer[FunctionSymTable]();
 	type FunctionSymTable = (String, Map[String, String], Int);
 	def init(st: ArrayBuffer[FunctionSymTable]) {
 		FINALSYMTABLE = st;
 	}
 
-	def generate(test: Node, funName: String, regset: Set[String]) : Unit = {
+	def generate(test: Node, funName: String, regset: Set[String]) : String = {
 		val children = test.children;
 		val exp1 = children(0);
 		val exp2 = children(2);
 		val exp1Reg= GenCodeForExpr.generate(exp1, funName, regset);
 		if (exp1Reg=="3") {
 			Utils.push(3);
-			val exp2Reg = GenCodeForExpr.generate(exp2, funName, regset);
+			val exp2Reg = GenCodeForExpr.generate(exp2, funName, emptySet);
 			Utils.pop(5);
+
 		}
 		else {
 			val newSet = regset - exp1Reg;
@@ -92,6 +94,8 @@ object GenCodeForTest {
 			MIPSOutput.append(not3);
 
 		}
+		return "3";
 	}
+
 
 }

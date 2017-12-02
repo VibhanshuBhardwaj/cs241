@@ -5,7 +5,7 @@ import GenCodeForFactor._;
 import Utils._;
 
 object GenCodeForTerm {
-	
+	val emptySet  = Set[String]();
 	def generate(term: Node, funcName: String, regSet: Set[String]) : String = {
 		val children = term.children;
 		val rule = term.rule;
@@ -43,7 +43,7 @@ object GenCodeForTerm {
 			if (s == "3") { 
 				Utils.push(3);
 
-				GenCodeForFactor.generate(children(2), funcName, regSet);
+				GenCodeForFactor.generate(children(2), funcName, emptySet);
 				Utils.pop(5);
 
 				val multiplyThem = "mult $3, $5";
@@ -69,7 +69,7 @@ object GenCodeForTerm {
 			if (s == "3") {
 				Utils.push(3)
 
-				GenCodeForFactor.generate(children(2), funcName, regSet);
+				GenCodeForFactor.generate(children(2), funcName, emptySet);
 				Utils.pop(5)
 				val divThem = "div $5, $3";
 				val mflo = "mflo $3";
@@ -92,7 +92,7 @@ object GenCodeForTerm {
 			if (s == "3") {
 				Utils.push(3)
 
-				GenCodeForFactor.generate(children(2), funcName, regSet);
+				GenCodeForFactor.generate(children(2), funcName, emptySet);
 				Utils.pop(5)
 				val divThem = "div $5, $3";
 				val mflo = "mfhi $3";

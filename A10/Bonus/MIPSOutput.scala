@@ -9,6 +9,7 @@ object MIPSOutput {
 		output += s;
 		return output;
 	}
+	val availableRegisters = Array("9", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27");
 	def init() {
 		output+= ".import print"
 		output+= ".import init"
@@ -19,6 +20,9 @@ object MIPSOutput {
 		output+= "lis $11"
 		output+= ".word 1"
 		output+= "beq $0, $0, Fwain"
+		for (r<- availableRegisters) {
+			Utils.push(r.toInt)
+		}
 	}
 	def addProlog(sizeSymTable: Int, name: String) {
 		var actualSize = sizeSymTable ;
@@ -51,13 +55,21 @@ object MIPSOutput {
 		output+="add $30, $29, $4"
 		if (name == "wain") {
 			output+="add $31, $28, $0"
+			for (r<- availableRegisters.reverse) {
+				Utils.pop(r.toInt)
+			}
 		//	output+="lw $31, -"+ sizeSymTable.toString+ "($29)";
 			
 		}
 		output+="jr $31"
 	}
-	def printOutput() {
-		for (inst <- output) println(inst);
+	def printOutput(comments: Boolean) {
+		for (inst <- output) {
+			if (comments) println(inst);
+			else {
+				if (!inst.startsWith(";")) println(inst);
+			}
+		}
 	}
 	def main(args: Array[String]) : Unit = {}
 }

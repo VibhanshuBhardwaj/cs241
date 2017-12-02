@@ -14,6 +14,7 @@ object GenCodeForExpr {
 	def init(st: ArrayBuffer[FunctionSymTable]) {
 		FINALSYMTABLE = st;
 	}
+	val emptySet  = Set[String]();
 
 	def generate(expr: Node, funcName:String, regSet: Set[String]) : String = {
 		val children = expr.children;
@@ -56,7 +57,7 @@ object GenCodeForExpr {
 				if (s == "3") {
 					Utils.push(3);
 
-					var t = GenCodeForTerm.generate(children(2), funcName, regSet);
+					var t = GenCodeForTerm.generate(children(2), funcName, emptySet);
 					println("; t should be 3 here. it is " + t)
 
 					Utils.pop(5);
@@ -79,7 +80,7 @@ object GenCodeForExpr {
 				if (s == "3") {
 					Utils.push(3);
 
-					val t= GenCodeForTerm.generate(children(2), funcName, regSet);
+					val t= GenCodeForTerm.generate(children(2), funcName, emptySet);
 					println("; t should be 3 here. it is " + t)
 					MIPSOutput.append("mult $3, $4");
 					MIPSOutput.append("mflo $3");
@@ -106,7 +107,7 @@ object GenCodeForExpr {
 					MIPSOutput.append("mflo $3");
 					Utils.push(3);
 
-					val t = GenCodeForTerm.generate(children(2), funcName, regSet);
+					val t = GenCodeForTerm.generate(children(2), funcName, emptySet);
 					println("; t should be 3 here. it is " + t)
 					Utils.pop(5);
 					var finalAddInst = "add $3, $5, $3";
@@ -138,7 +139,7 @@ object GenCodeForExpr {
 
 					Utils.push(3)
 
-					GenCodeForTerm.generate(children(2), funcName, regSet);
+					GenCodeForTerm.generate(children(2), funcName, emptySet);
 
 					Utils.pop(5);
 
@@ -161,7 +162,7 @@ object GenCodeForExpr {
 
 					Utils.push(3);
 
-					GenCodeForTerm.generate(children(2), funcName, regSet);
+					GenCodeForTerm.generate(children(2), funcName, emptySet);
 					MIPSOutput.append("mult $3, $4");
 					MIPSOutput.append("mflo $3");
 
@@ -190,7 +191,7 @@ object GenCodeForExpr {
 
 					Utils.push(3)
 
-					GenCodeForTerm.generate(children(2), funcName, regSet);
+					GenCodeForTerm.generate(children(2), funcName, emptySet);
 
 					Utils.pop(5);
 					var finalAddInst = "sub $3, $5, $3";

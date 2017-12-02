@@ -11,6 +11,7 @@ import GenCodeForExpr._;
 import Utils._;
 
 object GenCodeForFactor {
+	val availableRegisters = Array("9", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27");
 	var MappingToRegisters = Map[String, String]();
 	def init(mp: Map[String, String]) {
 		MappingToRegisters =mp;
@@ -70,7 +71,11 @@ object GenCodeForFactor {
 
 			if (MappingToRegisters contains fullName) {
 				r = MappingToRegisters(fullName);
-				return r;
+				var tt = ""
+				if (regSet.size == 0) tt = "3"
+				else tt = regSet.head;
+				MIPSOutput.append("add $" + tt + ", $" + r + ", $0");
+				return tt;
 			}
 			else {
 				if (regSet.size == 0) r = "3"
@@ -122,15 +127,28 @@ object GenCodeForFactor {
 
 			Utils.push(31);
 
+			var regUsed = (availableRegisters.toSet -- regSet).toArray;
+			MIPSOutput.append("; saving registers")
+			for (c<- regUsed) {
+				println("; c is " + c)
+				Utils.push(c.toString.toInt)
+			}
 			MIPSOutput.append("lis $10");
 			MIPSOutput.append(".word " + "F" + children(0).lex)
 			MIPSOutput.append("sub $29, $30, $4");
 			//MIPSOutput.append("sub $30, $30, $4")
 			MIPSOutput.append("jalr $10")
 
+			regUsed = regUsed.reverse;
+			MIPSOutput.append("; restoring registers")
+			for (c<- regUsed) {
+				Utils.pop(c.toString.toInt);
+			}
+
 			Utils.pop(31);
 
 			Utils.pop(29);
+			return "8"
 
 
 		}

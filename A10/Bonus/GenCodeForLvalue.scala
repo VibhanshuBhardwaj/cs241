@@ -10,9 +10,9 @@ object GenCodeForLvalue {
 		//ie. factor -> AMP lvalue;
 		val children = lvalue.children;
 		val rule = lvalue.rule;
-		println(";rule : " + rule)
+		
 		if (rule == "lvalue ID") {
-			println("; lvalue ID ")
+			MIPSOutput.append("; CAREFULLY CHECK THIS. lvalue -> ID")
 			val lex = children(0).lex;
 			val offset = Utils.getValOfLexFromSymTable(lex, funcName).split(" ")(1);
 			val lis3 = "lis $3"
