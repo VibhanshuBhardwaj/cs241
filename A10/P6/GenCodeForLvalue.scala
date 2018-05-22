@@ -8,6 +8,7 @@ object GenCodeForLvalue {
 	def generate(lvalue: Node, funcName: String) : Unit = {
 		//should only be called from inside generateCodeForFactor or recursively
 		//ie. factor -> AMP lvalue;
+		//
 		val children = lvalue.children;
 		val rule = lvalue.rule;
 		if (rule == "lvalue ID") {
@@ -15,6 +16,7 @@ object GenCodeForLvalue {
 			val offset = Utils.getValOfLexFromSymTable(lex, funcName).split(" ")(1);
 			val lis3 = "lis $3"
 			var dotWordOffset = ".word "
+			
 
 			if (offset == "0") dotWordOffset+= offset;
 			else {
